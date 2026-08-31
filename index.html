@@ -31,8 +31,16 @@
       background: #21242d; border-radius: 14px; padding: 14px; border: 1px solid var(--border-color); position: relative; min-height: 110px; display: flex; align-items: center; overflow: hidden;
     }
 
-    .hero-profile { display: flex; align-items: center; gap: 14px; width: 100%; }
-    .hero-avatar { font-size: 40px; background: #3a3f51; padding: 6px; border-radius: 12px; }
+    .hero-profile { display: flex; align-items: center; gap: 14px; width: 100%; cursor: pointer; }
+    
+    /* 캐릭터 아바타 & 뱃지 영역 */
+    .avatar-wrapper { position: relative; display: inline-block; }
+    .hero-avatar { font-size: 40px; background: #3a3f51; padding: 6px; border-radius: 12px; transition: transform 0.2s; }
+    .hero-profile:hover .hero-avatar { transform: scale(1.05); }
+    .hero-badge {
+      position: absolute; top: -6px; right: -8px; font-size: 10px; font-weight: 700; background: #1a1c23; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 1px 5px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
     .hero-info { flex: 1; }
     .hero-level { font-family: 'Press Start 2P', cursive; font-size: 12px; color: var(--accent-color); margin-bottom: 6px; }
     .exp-bar-bg { background: #1a1c23; height: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #4a4e69; position: relative; }
@@ -44,16 +52,14 @@
       display: none; width: 100%; justify-content: space-between; align-items: center; padding: 0 15px; position: relative; height: 100%;
     }
     .fighter { font-size: 42px; transition: transform 0.15s ease-out; position: relative; z-index: 2; }
-    .vs-text { font-family: 'Press Start 2P', cursive; font-size: 14px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.2s ease; }
+    .vs-text { 
+      font-family: 'Press Start 2P', cursive; font-size: 16px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000;
+    }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.3); } }
 
     /* 타격 이펙트 & 데미지 텍스트 */
-    .hit-effect {
-      position: absolute; right: 20px; font-size: 48px; opacity: 0; z-index: 10; pointer-events: none;
-    }
-    .damage-text {
-      position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 13px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700;
-    }
+    .hit-effect { position: absolute; right: 20px; font-size: 48px; opacity: 0; z-index: 10; pointer-events: none; }
+    .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 13px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
 
     /* 전투 애니메이션 클래스 */
     .stage-shake { animation: shake 0.3s ease-in-out; }
@@ -143,8 +149,8 @@
     .opt-btn-medium.active-diff { background: #ffb300; color: #3e2723; border-color: #ff8f00; }
     .opt-btn-hard.active-diff { background: #e53935; color: white; border-color: #c62828; }
 
-    /* 레벨업 팝업 */
-    .level-up-modal {
+    /* 레벨업 & 캐릭터 변경 모달 */
+    .level-up-modal, .avatar-select-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
       justify-content: center; align-items: center; z-index: 100; padding: 20px;
     }
@@ -155,6 +161,14 @@
     .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 14px; font-size: 18px; }
     .modal-box p { font-size: 13px; line-height: 1.5; color: #fff; }
     .modal-box button { margin-top: 16px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
+
+    /* 캐릭터 선택 그리드 */
+    .avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .avatar-item {
+      font-size: 36px; padding: 10px; background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+    }
+    .avatar-item:active { transform: scale(0.9); }
+    .avatar-item.selected { border-color: var(--accent-color); background: #3a3f51; }
   </style>
 </head>
 <body>
@@ -162,9 +176,12 @@
   <div class="game-container">
     <!-- 캐릭터 프로필 및 전투 스테이지 -->
     <div class="battle-stage" id="battleStage">
-      <!-- 1) 캐릭터 프로필 -->
-      <div class="hero-profile" id="heroProfileView">
-        <div class="hero-avatar" id="heroAvatar">⚔️</div>
+      <!-- 1) 캐릭터 프로필 (클릭 시 캐릭터 변경) -->
+      <div class="hero-profile" id="heroProfileView" onclick="openAvatarModal()">
+        <div class="avatar-wrapper">
+          <div class="hero-avatar" id="heroAvatar">⚔️</div>
+          <div class="hero-badge" id="heroBadge">🥉 초보</div>
+        </div>
         <div class="hero-info">
           <div class="hero-level" id="heroLevel">LV. 1 용사</div>
           <div class="exp-bar-bg">
@@ -236,15 +253,26 @@
     </div>
   </div>
 
+  <!-- 캐릭터 변경 선택 모달 -->
+  <div class="avatar-select-modal" id="avatarSelectModal">
+    <div class="modal-box">
+      <h2>HERO SELECT</h2>
+      <p>대표 캐릭터를 선택하세요!</p>
+      <div class="avatar-grid" id="avatarGrid"></div>
+      <button onclick="closeAvatarModal()">선택 완료</button>
+    </div>
+  </div>
+
   <script>
     let level = parseInt(localStorage.getItem('quest_level')) || 1;
     let currentExp = parseInt(localStorage.getItem('quest_exp')) || 0;
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
+    let chosenAvatar = localStorage.getItem('quest_chosen_avatar') || '⚔️';
 
     let selectedType = 'daily';
     let selectedDiff = 20;
 
-    const avatars = ['⚔️', '🛡️', '🧙‍♂️', '🥷', '👑', '🐉'];
+    const availableAvatars = ['⚔️', '🛡️', '🧙‍♂️', '🥷', '👑', '🐉', '🏹', '🦄', '🦁'];
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
@@ -267,17 +295,50 @@
     function saveData() {
       localStorage.setItem('quest_level', level);
       localStorage.setItem('quest_exp', currentExp);
+      localStorage.setItem('quest_chosen_avatar', chosenAvatar);
       localStorage.setItem('quest_list_v2', JSON.stringify(quests));
+    }
+
+    /* 레벨 구간별 뱃지 부여 시스템 */
+    function getLevelBadge(lvl) {
+      if (lvl >= 15) return "💎 전설";
+      if (lvl >= 10) return "🥇 대마법사";
+      if (lvl >= 5) return "🥈 기사";
+      return "🥉 초보";
     }
 
     function updateProfile() {
       const maxExp = getMaxExp();
       document.getElementById('heroLevel').textContent = `LV. ${level} 용사`;
-      document.getElementById('heroAvatar').textContent = avatars[(level - 1) % avatars.length];
+      document.getElementById('heroAvatar').textContent = chosenAvatar;
+      document.getElementById('heroBadge').textContent = getLevelBadge(level);
       
       const expPercent = Math.min((currentExp / maxExp) * 100, 100);
       document.getElementById('expFill').style.width = `${expPercent}%`;
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
+    }
+
+    /* 캐릭터 고정 변경 모달 관련 로직 */
+    function openAvatarModal() {
+      const grid = document.getElementById('avatarGrid');
+      grid.innerHTML = '';
+      availableAvatars.forEach(av => {
+        const item = document.createElement('div');
+        item.className = `avatar-item ${av === chosenAvatar ? 'selected' : ''}`;
+        item.textContent = av;
+        item.onclick = () => {
+          chosenAvatar = av;
+          saveData();
+          updateProfile();
+          openAvatarModal();
+        };
+        grid.appendChild(item);
+      });
+      document.getElementById('avatarSelectModal').style.display = 'flex';
+    }
+
+    function closeAvatarModal() {
+      document.getElementById('avatarSelectModal').style.display = 'none';
     }
 
     document.getElementById('openAddModalBtn').addEventListener('click', () => {
@@ -342,7 +403,7 @@
       });
     }
 
-    /* 난이도별 타격 및 VS 숨김 처리 액션 연출 */
+    /* 전투 애니메이션 - VS 등장 후 용사 공격 시 소멸 처리 */
     function clearQuestWithBattle(index) {
       const q = quests[index];
       if (q.completed) return;
@@ -364,7 +425,7 @@
       profileView.style.display = 'none';
       arenaView.style.display = 'flex';
       
-      heroFighter.textContent = avatars[(level - 1) % avatars.length];
+      heroFighter.textContent = chosenAvatar;
       monsterFighter.textContent = monsters[Math.floor(Math.random() * monsters.length)];
       
       heroFighter.className = 'fighter';
@@ -372,13 +433,13 @@
       hitEffect.className = 'hit-effect';
       damageText.className = 'damage-text';
       
-      // VS 텍스트 초기화 및 보이기
+      // VS 텍스트를 무조건 선명하게 보이기
       vsText.textContent = 'VS';
       vsText.style.color = '#e74c3c';
       vsText.style.opacity = '1';
 
       const triggerHit = (dmg) => {
-        // 첫 공격 시 VS 글자 숨기기
+        // 용사가 돌진 공격 시 VS 텍스트를 자연스럽게 숨김
         vsText.style.opacity = '0';
 
         heroFighter.classList.add('hero-dash');
@@ -402,7 +463,10 @@
         }, 150);
       };
 
-      triggerHit(1000);
+      // 전투 개시 0.4초 후 첫 타격 (VS가 처음에 보인 뒤 사라집니다)
+      setTimeout(() => {
+        triggerHit(1000);
+      }, 400);
 
       let hitInterval = setInterval(() => {
         const randomDmg = Math.floor(Math.random() * 3000) + 2000;
@@ -414,7 +478,7 @@
 
         monsterFighter.classList.add('monster-die');
         
-        // VICTORY 출력 시 텍스트 다시 보이기
+        // 몬스터 처치 후 VICTORY 표시
         vsText.textContent = 'VICTORY!';
         vsText.style.color = '#2ecc71';
         vsText.style.opacity = '1';
@@ -433,7 +497,7 @@
           saveData();
           renderQuests();
         }, 800);
-      }, battleDuration);
+      }, battleDuration + 400);
     }
 
     function gainExp(amount) {

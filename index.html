@@ -20,36 +20,61 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
-
-    .game-container {
-      background: var(--card-bg); width: 100%; max-width: 420px; min-height: 600px; border-radius: 20px; padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--border-color); display: flex; flex-direction: column; gap: 16px; justify-content: space-between; position: relative; overflow: hidden;
+    
+    /* 화면 스크롤 완전 방지 */
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    /* 캐릭터 프로필 & 전투 스테이지 헤더 */
+    /* 메인 컨테이너 크기 자동 조절 */
+    .game-container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 420px;
+      height: 100vh;
+      max-height: 780px;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 2px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 캐릭터 프로필 & 전투 스테이지 */
     .battle-stage {
-      background: #21242d; border-radius: 14px; padding: 14px; border: 1px solid var(--border-color); position: relative; min-height: 110px; display: flex; align-items: center; overflow: hidden;
+      background: #21242d; border-radius: 14px; padding: 12px; border: 1px solid var(--border-color); position: relative; min-height: 95px; display: flex; align-items: center; overflow: hidden; flex-shrink: 0;
     }
 
     .hero-profile { display: flex; align-items: center; gap: 12px; width: 100%; }
     
     .avatar-wrapper { position: relative; display: inline-block; cursor: pointer; }
-    .hero-avatar { font-size: 40px; background: #3a3f51; padding: 6px; border-radius: 12px; transition: transform 0.2s; }
+    .hero-avatar { font-size: 36px; background: #3a3f51; padding: 4px 6px; border-radius: 12px; transition: transform 0.2s; }
     .avatar-wrapper:hover .hero-avatar { transform: scale(1.05); }
     .hero-badge {
-      position: absolute; top: -6px; right: -8px; font-size: 10px; font-weight: 700; background: #1a1c23; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 1px 5px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      position: absolute; top: -6px; right: -8px; font-size: 9px; font-weight: 700; background: #1a1c23; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 1px 4px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
     .hero-info { flex: 1; }
-    .hero-level { font-family: 'Press Start 2P', cursive; font-size: 12px; color: var(--accent-color); margin-bottom: 6px; }
-    .exp-bar-bg { background: #1a1c23; height: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #4a4e69; position: relative; }
+    .hero-level { font-family: 'Press Start 2P', cursive; font-size: 11px; color: var(--accent-color); margin-bottom: 4px; }
+    .exp-bar-bg { background: #1a1c23; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid #4a4e69; position: relative; }
     .exp-bar-fill { background: linear-gradient(90deg, #f1c40f, #e67e22); height: 100%; width: 0%; transition: width 0.3s ease; }
-    .exp-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: 700; top: 0; line-height: 16px; color: #fff; text-shadow: 1px 1px 2px #000; }
+    .exp-text { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: 700; top: 0; line-height: 14px; color: #fff; text-shadow: 1px 1px 2px #000; }
 
-    /* 상단 우측 아이콘 퀘스트 추가 버튼 */
+    /* 우측 상단 소형 버튼 */
     .icon-add-btn {
-      background: var(--accent-color); color: white; border: none; width: 36px; height: 36px; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s; flex-shrink: 0;
+      background: var(--accent-color); color: white; border: none; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s; flex-shrink: 0;
     }
     .icon-add-btn:active { transform: scale(0.9); }
 
@@ -57,14 +82,14 @@
     .battle-arena {
       display: none; width: 100%; justify-content: space-between; align-items: center; padding: 0 15px; position: relative; height: 100%;
     }
-    .fighter { font-size: 42px; transition: transform 0.15s ease-out; position: relative; z-index: 2; }
+    .fighter { font-size: 38px; transition: transform 0.15s ease-out; position: relative; z-index: 2; }
     .vs-text { 
-      font-family: 'Press Start 2P', cursive; font-size: 14px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000; text-align: center;
+      font-family: 'Press Start 2P', cursive; font-size: 13px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000; text-align: center;
     }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.2); } }
 
-    .hit-effect { position: absolute; right: 20px; font-size: 48px; opacity: 0; z-index: 10; pointer-events: none; }
-    .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 13px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
+    .hit-effect { position: absolute; right: 20px; font-size: 42px; opacity: 0; z-index: 10; pointer-events: none; }
+    .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 12px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
 
     /* 전투 연출 클래스 */
     .stage-shake { animation: shake 0.3s ease-in-out; }
@@ -88,29 +113,29 @@
 
     .monster-die { transform: translateY(40px) rotate(180deg) scale(0) !important; opacity: 0; transition: all 0.4s ease-in; }
 
-    /* 퀘스트 목록 */
-    .quest-list-container { flex: 1; display: flex; flex-direction: column; }
-    .quest-list { display: flex; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto; }
+    /* 퀘스트 목록 (유연한 고정 높이 처리) */
+    .quest-list-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .quest-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-right: 2px; }
     .empty-msg { text-align: center; color: #868e96; font-size: 13px; margin: auto; line-height: 1.6; }
 
     .quest-card {
-      background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s;
+      background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; flex-shrink: 0;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .quest-info { display: flex; flex-direction: column; gap: 4px; }
+    .quest-info { display: flex; flex-direction: column; gap: 3px; }
     .quest-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; word-break: break-all; }
-    .quest-type-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .quest-type-badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; }
     .badge-daily { background: #3498db; color: white; }
     .badge-once { background: #9b59b6; color: white; }
     .difficulty-tag { font-size: 10px; color: #868e96; }
 
     .quest-actions { display: flex; gap: 6px; align-items: center; }
     .clear-btn {
-      background: var(--success-color); color: white; border: none; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      background: var(--success-color); color: white; border: none; padding: 6px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
     }
     .fail-btn {
-      background: var(--danger-color); color: white; border: none; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      background: var(--danger-color); color: white; border: none; padding: 6px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
     }
     .clear-btn:disabled, .fail-btn:disabled { background: #4a4e69; cursor: not-allowed; opacity: 0.5; }
 
@@ -120,30 +145,30 @@
       background: #f4e4bc;
       background-image: radial-gradient(#e3cb98 1px, transparent 1px);
       background-size: 16px 16px;
-      z-index: 50; padding: 24px 20px; flex-direction: column; justify-content: space-between; 
+      z-index: 50; padding: 20px 16px; flex-direction: column; justify-content: space-between; 
       animation: slideUp 0.3s ease-out; color: #3e2723; border: 6px solid #8d6e63; border-radius: 16px;
     }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #8d6e63; padding-bottom: 12px; }
-    .modal-header h3 { font-size: 16px; font-weight: 700; color: #4e342e; }
-    .close-page-btn { background: none; border: none; color: #8d6e63; font-size: 22px; cursor: pointer; font-weight: 700; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #8d6e63; padding-bottom: 10px; }
+    .modal-header h3 { font-size: 15px; font-weight: 700; color: #4e342e; }
+    .close-page-btn { background: none; border: none; color: #8d6e63; font-size: 20px; cursor: pointer; font-weight: 700; }
 
     .submit-quest-btn {
-      width: 100%; padding: 14px; background: #8d6e63; color: #fff8e1; border: 2px solid #4e342e; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      width: 100%; padding: 12px; background: #8d6e63; color: #fff8e1; border: 2px solid #4e342e; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     .submit-quest-btn:active { transform: scale(0.98); background: #6d4c41; }
 
-    .input-form-body { display: flex; flex-direction: column; gap: 16px; margin-top: 14px; flex: 1; }
+    .input-form-body { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; flex: 1; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 12px; color: #5d4037; font-weight: 700; }
     .quest-input-full { 
-      width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 14px; font-weight: 700;
+      width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700;
     }
 
-    .btn-toggle-box { display: flex; gap: 8px; }
+    .btn-toggle-box { display: flex; gap: 6px; }
     .opt-btn {
-      flex: 1; padding: 10px 6px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s;
+      flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s;
     }
     .opt-btn.active-type { background: #5c6bc0; color: white; border-color: #3f51b5; }
     .opt-btn-easy.active-diff { background: #4caf50; color: white; border-color: #2e7d32; }
@@ -156,16 +181,16 @@
       justify-content: center; align-items: center; z-index: 100; padding: 20px;
     }
     .modal-box {
-      background: var(--card-bg); border: 2px solid var(--accent-color); padding: 24px; border-radius: 20px; text-align: center; animation: pop 0.3s ease-out; width: 100%; max-width: 320px;
+      background: var(--card-bg); border: 2px solid var(--accent-color); padding: 20px; border-radius: 20px; text-align: center; animation: pop 0.3s ease-out; width: 100%; max-width: 320px;
     }
     @keyframes pop { from { transform: scale(0.5); } to { transform: scale(1); } }
-    .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 14px; font-size: 18px; }
-    .modal-box p { font-size: 13px; line-height: 1.5; color: #fff; }
-    .modal-box button { margin-top: 16px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
+    .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 12px; font-size: 16px; }
+    .modal-box p { font-size: 12px; line-height: 1.5; color: #fff; }
+    .modal-box button { margin-top: 14px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
 
-    .avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     .avatar-item {
-      font-size: 36px; padding: 10px; background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+      font-size: 32px; padding: 8px; background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
     }
     .avatar-item:active { transform: scale(0.9); }
     .avatar-item.selected { border-color: var(--accent-color); background: #3a3f51; }
@@ -279,7 +304,6 @@
       return lvl * 100;
     }
 
-    /* 하루 지나면 미완료 일일 퀘스트 자동 실패 처리 */
     function checkDailyReset() {
       const today = new Date().toDateString();
       if (lastResetDate !== today && lastResetDate !== '') {
@@ -287,9 +311,9 @@
         quests.forEach(q => {
           if (q.type === 'daily') {
             if (!q.completed) {
-              totalPenalty += q.exp; // 미완료 일일 퀘스트 감점
+              totalPenalty += q.exp;
             }
-            q.completed = false; // 새 하루 시작으로 완료 상태 초기화
+            q.completed = false;
           }
         });
 
@@ -417,7 +441,6 @@
       });
     }
 
-    /* 클리어 전투 연출 */
     function clearQuestWithBattle(index) {
       const q = quests[index];
       if (q.completed) return;
@@ -510,7 +533,6 @@
       }, battleDuration + 400);
     }
 
-    /* 경험치 차감 및 레벨 다운 패널티 로직 */
     function loseExp(amount) {
       currentExp -= amount;
 
@@ -529,7 +551,6 @@
       updateProfile();
     }
 
-    /* 수동 퀘스트 실패 버튼 처리 */
     function failQuest(index) {
       const q = quests[index];
       const penaltyExp = q.exp;

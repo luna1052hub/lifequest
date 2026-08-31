@@ -33,7 +33,6 @@
 
     .hero-profile { display: flex; align-items: center; gap: 14px; width: 100%; cursor: pointer; }
     
-    /* 캐릭터 아바타 & 뱃지 영역 */
     .avatar-wrapper { position: relative; display: inline-block; }
     .hero-avatar { font-size: 40px; background: #3a3f51; padding: 6px; border-radius: 12px; transition: transform 0.2s; }
     .hero-profile:hover .hero-avatar { transform: scale(1.05); }
@@ -53,15 +52,14 @@
     }
     .fighter { font-size: 42px; transition: transform 0.15s ease-out; position: relative; z-index: 2; }
     .vs-text { 
-      font-family: 'Press Start 2P', cursive; font-size: 16px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000;
+      font-family: 'Press Start 2P', cursive; font-size: 14px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000; text-align: center;
     }
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.3); } }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.2); } }
 
-    /* 타격 이펙트 & 데미지 텍스트 */
     .hit-effect { position: absolute; right: 20px; font-size: 48px; opacity: 0; z-index: 10; pointer-events: none; }
     .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 13px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
 
-    /* 전투 애니메이션 클래스 */
+    /* 전투 & 실패 연출 클래스 */
     .stage-shake { animation: shake 0.3s ease-in-out; }
     @keyframes shake {
       0%, 100% { transform: translate(0, 0); }
@@ -113,7 +111,7 @@
     }
     .open-add-modal-btn:active { transform: scale(0.98); }
 
-    /* 양피지 스타일 퀘스트 수락 모달 페이지 */
+    /* 양피지 모달 */
     .input-page-modal {
       display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
       background: #f4e4bc;
@@ -162,7 +160,6 @@
     .modal-box p { font-size: 13px; line-height: 1.5; color: #fff; }
     .modal-box button { margin-top: 16px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
 
-    /* 캐릭터 선택 그리드 */
     .avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
     .avatar-item {
       font-size: 36px; padding: 10px; background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
@@ -176,7 +173,7 @@
   <div class="game-container">
     <!-- 캐릭터 프로필 및 전투 스테이지 -->
     <div class="battle-stage" id="battleStage">
-      <!-- 1) 캐릭터 프로필 (클릭 시 캐릭터 변경) -->
+      <!-- 1) 캐릭터 프로필 -->
       <div class="hero-profile" id="heroProfileView" onclick="openAvatarModal()">
         <div class="avatar-wrapper">
           <div class="hero-avatar" id="heroAvatar">⚔️</div>
@@ -191,7 +188,7 @@
         </div>
       </div>
 
-      <!-- 2) 다이나믹 액션 전투 무대 -->
+      <!-- 2) 전투 및 실패 연출 무대 -->
       <div class="battle-arena" id="battleArenaView">
         <div class="fighter" id="heroFighter">⚔️</div>
         <div class="vs-text" id="vsText">VS</div>
@@ -201,15 +198,15 @@
       </div>
     </div>
 
-    <!-- 퀘스트 리스트 영역 -->
+    <!-- 퀘스트 리스트 -->
     <div class="quest-list-container">
       <div class="quest-list" id="questList"></div>
     </div>
 
-    <!-- 메인 하단 퀘스트 수락 페이지 이동 버튼 -->
+    <!-- 메인 하단 버튼 -->
     <button class="open-add-modal-btn" id="openAddModalBtn">➕ 새로운 퀘스트 수락하기</button>
 
-    <!-- 양피지 스타일 퀘스트 입력 모달 -->
+    <!-- 양피지 모달 -->
     <div class="input-page-modal" id="inputPageModal">
       <div class="modal-header">
         <h3>📜 퀘스트 수락서 작성</h3>
@@ -253,7 +250,7 @@
     </div>
   </div>
 
-  <!-- 캐릭터 변경 선택 모달 -->
+  <!-- 캐릭터 선택 모달 -->
   <div class="avatar-select-modal" id="avatarSelectModal">
     <div class="modal-box">
       <h2>HERO SELECT</h2>
@@ -276,8 +273,8 @@
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
-    function getMaxExp() {
-      return level * 100;
+    function getMaxExp(lvl = level) {
+      return lvl * 100;
     }
 
     function checkDailyReset() {
@@ -299,7 +296,6 @@
       localStorage.setItem('quest_list_v2', JSON.stringify(quests));
     }
 
-    /* 레벨 구간별 뱃지 부여 시스템 */
     function getLevelBadge(lvl) {
       if (lvl >= 15) return "💎 전설";
       if (lvl >= 10) return "🥇 대마법사";
@@ -318,7 +314,6 @@
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
     }
 
-    /* 캐릭터 고정 변경 모달 관련 로직 */
     function openAvatarModal() {
       const grid = document.getElementById('avatarGrid');
       grid.innerHTML = '';
@@ -403,7 +398,7 @@
       });
     }
 
-    /* 전투 애니메이션 - VS 등장 후 용사 공격 시 소멸 처리 */
+    /* 클리어 전투 연출 */
     function clearQuestWithBattle(index) {
       const q = quests[index];
       if (q.completed) return;
@@ -433,13 +428,11 @@
       hitEffect.className = 'hit-effect';
       damageText.className = 'damage-text';
       
-      // VS 텍스트를 무조건 선명하게 보이기
       vsText.textContent = 'VS';
       vsText.style.color = '#e74c3c';
       vsText.style.opacity = '1';
 
       const triggerHit = (dmg) => {
-        // 용사가 돌진 공격 시 VS 텍스트를 자연스럽게 숨김
         vsText.style.opacity = '0';
 
         heroFighter.classList.add('hero-dash');
@@ -463,7 +456,6 @@
         }, 150);
       };
 
-      // 전투 개시 0.4초 후 첫 타격 (VS가 처음에 보인 뒤 사라집니다)
       setTimeout(() => {
         triggerHit(1000);
       }, 400);
@@ -478,7 +470,6 @@
 
         monsterFighter.classList.add('monster-die');
         
-        // 몬스터 처치 후 VICTORY 표시
         vsText.textContent = 'VICTORY!';
         vsText.style.color = '#2ecc71';
         vsText.style.opacity = '1';
@@ -498,6 +489,58 @@
           renderQuests();
         }, 800);
       }, battleDuration + 400);
+    }
+
+    /* 경험치 차감 및 레벨 다운 패널티 로직 */
+    function loseExp(amount) {
+      currentExp -= amount;
+
+      // 경험치가 0 미만으로 떨어졌을 때 레벨 다운 처리
+      while (currentExp < 0) {
+        if (level > 1) {
+          level--;
+          currentExp += getMaxExp(level); // 이전 레벨의 최대 경험치 수치만큼 보정
+        } else {
+          level = 1;
+          currentExp = 0;
+          break;
+        }
+      }
+
+      saveData();
+      updateProfile();
+    }
+
+    /* 퀘스트 실패(삭제) 액션 및 실패 연출 */
+    function deleteQuest(index) {
+      const q = quests[index];
+      const penaltyExp = q.exp; // 난이도별 경험치 차감 (10, 20, 40)
+
+      const profileView = document.getElementById('heroProfileView');
+      const arenaView = document.getElementById('battleArenaView');
+      const heroFighter = document.getElementById('heroFighter');
+      const monsterFighter = document.getElementById('monsterFighter');
+      const vsText = document.getElementById('vsText');
+
+      profileView.style.display = 'none';
+      arenaView.style.display = 'flex';
+
+      heroFighter.textContent = chosenAvatar;
+      monsterFighter.textContent = '💀';
+      
+      vsText.innerHTML = `QUEST FAILED!<br><span style="font-size:10px; color:#ff0055;">-${penaltyExp} EXP</span>`;
+      vsText.style.color = '#e74c3c';
+      vsText.style.opacity = '1';
+
+      // 1.2초 동안 실패 연출 노출 후 감점 적용
+      setTimeout(() => {
+        arenaView.style.display = 'none';
+        profileView.style.display = 'flex';
+
+        quests.splice(index, 1);
+        loseExp(penaltyExp);
+        renderQuests();
+      }, 1200);
     }
 
     function gainExp(amount) {
@@ -521,12 +564,6 @@
     document.getElementById('closeModal').addEventListener('click', () => {
       document.getElementById('levelUpModal').style.display = 'none';
     });
-
-    function deleteQuest(index) {
-      quests.splice(index, 1);
-      saveData();
-      renderQuests();
-    }
 
     document.getElementById('submitQuestBtn').addEventListener('click', () => {
       const input = document.getElementById('questInput');

@@ -14,6 +14,7 @@
       --card-bg: #2d313e;
       --accent-color: #f39c12;
       --success-color: #2ecc71;
+      --danger-color: #e74c3c;
       --text-color: #ffffff;
       --border-color: #4a4e69;
     }
@@ -22,20 +23,20 @@
     body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
 
     .game-container {
-      background: var(--card-bg); width: 100%; max-width: 420px; min-height: 620px; border-radius: 20px; padding: 20px;
+      background: var(--card-bg); width: 100%; max-width: 420px; min-height: 600px; border-radius: 20px; padding: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--border-color); display: flex; flex-direction: column; gap: 16px; justify-content: space-between; position: relative; overflow: hidden;
     }
 
-    /* 캐릭터 프로필 & 전투 스테이지 */
+    /* 캐릭터 프로필 & 전투 스테이지 헤더 */
     .battle-stage {
       background: #21242d; border-radius: 14px; padding: 14px; border: 1px solid var(--border-color); position: relative; min-height: 110px; display: flex; align-items: center; overflow: hidden;
     }
 
-    .hero-profile { display: flex; align-items: center; gap: 14px; width: 100%; cursor: pointer; }
+    .hero-profile { display: flex; align-items: center; gap: 12px; width: 100%; }
     
-    .avatar-wrapper { position: relative; display: inline-block; }
+    .avatar-wrapper { position: relative; display: inline-block; cursor: pointer; }
     .hero-avatar { font-size: 40px; background: #3a3f51; padding: 6px; border-radius: 12px; transition: transform 0.2s; }
-    .hero-profile:hover .hero-avatar { transform: scale(1.05); }
+    .avatar-wrapper:hover .hero-avatar { transform: scale(1.05); }
     .hero-badge {
       position: absolute; top: -6px; right: -8px; font-size: 10px; font-weight: 700; background: #1a1c23; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 1px 5px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
@@ -45,6 +46,12 @@
     .exp-bar-bg { background: #1a1c23; height: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #4a4e69; position: relative; }
     .exp-bar-fill { background: linear-gradient(90deg, #f1c40f, #e67e22); height: 100%; width: 0%; transition: width 0.3s ease; }
     .exp-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: 700; top: 0; line-height: 16px; color: #fff; text-shadow: 1px 1px 2px #000; }
+
+    /* 상단 우측 아이콘 퀘스트 추가 버튼 */
+    .icon-add-btn {
+      background: var(--accent-color); color: white; border: none; width: 36px; height: 36px; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s; flex-shrink: 0;
+    }
+    .icon-add-btn:active { transform: scale(0.9); }
 
     /* 다이나믹 전투 레이어 */
     .battle-arena {
@@ -59,7 +66,7 @@
     .hit-effect { position: absolute; right: 20px; font-size: 48px; opacity: 0; z-index: 10; pointer-events: none; }
     .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 13px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
 
-    /* 전투 & 실패 연출 클래스 */
+    /* 전투 연출 클래스 */
     .stage-shake { animation: shake 0.3s ease-in-out; }
     @keyframes shake {
       0%, 100% { transform: translate(0, 0); }
@@ -83,7 +90,7 @@
 
     /* 퀘스트 목록 */
     .quest-list-container { flex: 1; display: flex; flex-direction: column; }
-    .quest-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; }
+    .quest-list { display: flex; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto; }
     .empty-msg { text-align: center; color: #868e96; font-size: 13px; margin: auto; line-height: 1.6; }
 
     .quest-card {
@@ -102,14 +109,10 @@
     .clear-btn {
       background: var(--success-color); color: white; border: none; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
     }
-    .clear-btn:disabled { background: #4a4e69; cursor: not-allowed; opacity: 0.6; }
-    .delete-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 14px; padding: 4px; }
-
-    /* 메인 하단 버튼 */
-    .open-add-modal-btn {
-      width: 100%; padding: 14px; background: var(--accent-color); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3); transition: transform 0.1s;
+    .fail-btn {
+      background: var(--danger-color); color: white; border: none; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
     }
-    .open-add-modal-btn:active { transform: scale(0.98); }
+    .clear-btn:disabled, .fail-btn:disabled { background: #4a4e69; cursor: not-allowed; opacity: 0.5; }
 
     /* 양피지 모달 */
     .input-page-modal {
@@ -174,8 +177,8 @@
     <!-- 캐릭터 프로필 및 전투 스테이지 -->
     <div class="battle-stage" id="battleStage">
       <!-- 1) 캐릭터 프로필 -->
-      <div class="hero-profile" id="heroProfileView" onclick="openAvatarModal()">
-        <div class="avatar-wrapper">
+      <div class="hero-profile" id="heroProfileView">
+        <div class="avatar-wrapper" onclick="openAvatarModal()">
           <div class="hero-avatar" id="heroAvatar">⚔️</div>
           <div class="hero-badge" id="heroBadge">🥉 초보</div>
         </div>
@@ -186,9 +189,11 @@
             <div class="exp-text" id="expText">0 / 100 EXP</div>
           </div>
         </div>
+        <!-- 우측 상단 소형 퀘스트 추가 버튼 -->
+        <button class="icon-add-btn" id="openAddModalBtn">➕</button>
       </div>
 
-      <!-- 2) 전투 및 실패 연출 무대 -->
+      <!-- 2) 전투 연출 무대 -->
       <div class="battle-arena" id="battleArenaView">
         <div class="fighter" id="heroFighter">⚔️</div>
         <div class="vs-text" id="vsText">VS</div>
@@ -202,9 +207,6 @@
     <div class="quest-list-container">
       <div class="quest-list" id="questList"></div>
     </div>
-
-    <!-- 메인 하단 버튼 -->
-    <button class="open-add-modal-btn" id="openAddModalBtn">➕ 새로운 퀘스트 수락하기</button>
 
     <!-- 양피지 모달 -->
     <div class="input-page-modal" id="inputPageModal">
@@ -277,15 +279,30 @@
       return lvl * 100;
     }
 
+    /* 하루 지나면 미완료 일일 퀘스트 자동 실패 처리 */
     function checkDailyReset() {
       const today = new Date().toDateString();
-      if (lastResetDate !== today) {
+      if (lastResetDate !== today && lastResetDate !== '') {
+        let totalPenalty = 0;
         quests.forEach(q => {
-          if (q.type === 'daily') q.completed = false;
+          if (q.type === 'daily') {
+            if (!q.completed) {
+              totalPenalty += q.exp; // 미완료 일일 퀘스트 감점
+            }
+            q.completed = false; // 새 하루 시작으로 완료 상태 초기화
+          }
         });
+
+        if (totalPenalty > 0) {
+          loseExp(totalPenalty);
+        }
+
         lastResetDate = today;
         localStorage.setItem('quest_last_reset', lastResetDate);
         saveData();
+      } else if (lastResetDate === '') {
+        lastResetDate = today;
+        localStorage.setItem('quest_last_reset', lastResetDate);
       }
     }
 
@@ -368,7 +385,7 @@
       listEl.innerHTML = '';
 
       if (quests.length === 0) {
-        listEl.innerHTML = '<div class="empty-msg">📜 수락한 퀘스트가 없습니다.<br>아래 버튼을 눌러 퀘스트를 수락해 보세요!</div>';
+        listEl.innerHTML = '<div class="empty-msg">📜 수락한 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 퀘스트를 수락해 보세요!</div>';
         return;
       }
 
@@ -391,7 +408,9 @@
             <button class="clear-btn" ${q.completed ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
               ${q.completed ? '완료됨 ✔' : '클리어'}
             </button>
-            <button class="delete-btn" onclick="deleteQuest(${index})">✕</button>
+            <button class="fail-btn" ${q.completed ? 'disabled' : ''} onclick="failQuest(${index})">
+              실패
+            </button>
           </div>
         `;
         listEl.appendChild(card);
@@ -495,11 +514,10 @@
     function loseExp(amount) {
       currentExp -= amount;
 
-      // 경험치가 0 미만으로 떨어졌을 때 레벨 다운 처리
       while (currentExp < 0) {
         if (level > 1) {
           level--;
-          currentExp += getMaxExp(level); // 이전 레벨의 최대 경험치 수치만큼 보정
+          currentExp += getMaxExp(level);
         } else {
           level = 1;
           currentExp = 0;
@@ -511,10 +529,10 @@
       updateProfile();
     }
 
-    /* 퀘스트 실패(삭제) 액션 및 실패 연출 */
-    function deleteQuest(index) {
+    /* 수동 퀘스트 실패 버튼 처리 */
+    function failQuest(index) {
       const q = quests[index];
-      const penaltyExp = q.exp; // 난이도별 경험치 차감 (10, 20, 40)
+      const penaltyExp = q.exp;
 
       const profileView = document.getElementById('heroProfileView');
       const arenaView = document.getElementById('battleArenaView');
@@ -532,7 +550,6 @@
       vsText.style.color = '#e74c3c';
       vsText.style.opacity = '1';
 
-      // 1.2초 동안 실패 연출 노출 후 감점 적용
       setTimeout(() => {
         arenaView.style.display = 'none';
         profileView.style.display = 'flex';

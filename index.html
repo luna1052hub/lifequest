@@ -39,7 +39,7 @@
     .exp-bar-fill { background: linear-gradient(90deg, #f1c40f, #e67e22); height: 100%; width: 0%; transition: width 0.3s ease; }
     .exp-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: 700; top: 0; line-height: 16px; color: #fff; text-shadow: 1px 1px 2px #000; }
 
-    /* 액션 강화 전투 레이어 */
+    /* 다이나믹 전투 레이어 */
     .battle-arena {
       display: none; width: 100%; justify-content: space-between; align-items: center; padding: 0 15px; position: relative; height: 100%;
     }
@@ -272,7 +272,6 @@
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
     }
 
-    /* 입력 모달 연출 */
     document.getElementById('openAddModalBtn').addEventListener('click', () => {
       document.getElementById('inputPageModal').style.display = 'flex';
     });
@@ -335,7 +334,7 @@
       });
     }
 
-    /* 타격감 강화 액션 전투 연출 로직 */
+    /* 난이도별 타격 시간(쉬움:2초, 보통:3초, 어려움:4초) 반영 액션 연출 */
     function clearQuestWithBattle(index) {
       const q = quests[index];
       if (q.completed) return;
@@ -349,7 +348,12 @@
       const hitEffect = document.getElementById('hitEffect');
       const damageText = document.getElementById('damageText');
 
-      // 1. 프로필 전환 및 리셋
+      // 난이도에 따른 연출시간 결정 (10: 2000ms, 20: 3000ms, 40: 4000ms)
+      let battleDuration = 3000;
+      if (q.exp === 10) battleDuration = 2000;
+      if (q.exp === 20) battleDuration = 3000;
+      if (q.exp === 40) battleDuration = 4000;
+
       profileView.style.display = 'none';
       arenaView.style.display = 'flex';
       
@@ -363,44 +367,61 @@
       vsText.textContent = 'VS';
       vsText.style.color = '#e74c3c';
 
-      // 2. 용사 대쉬 공격
-      setTimeout(() => {
+      // 타격 함수
+      const triggerHit = (dmg) => {
         heroFighter.classList.add('hero-dash');
-        
-        // 3. 몬스터 타격 파티클 + 화면 셰이크
         setTimeout(() => {
           battleStage.classList.add('stage-shake');
           monsterFighter.classList.add('monster-hit');
+          
+          hitEffect.classList.remove('hit-active');
+          damageText.classList.remove('damage-active');
+          void hitEffect.offsetWidth; // DOM 애니메이션 리셋
+          
           hitEffect.classList.add('hit-active');
           damageText.classList.add('damage-active');
-          damageText.textContent = `9999!`;
+          damageText.textContent = `${dmg}!`;
 
-          // 4. 몬스터 사망 및 VICTORY
           setTimeout(() => {
             heroFighter.classList.remove('hero-dash');
             battleStage.classList.remove('stage-shake');
-            monsterFighter.classList.add('monster-die');
-            vsText.textContent = 'VICTORY!';
-            vsText.style.color = '#2ecc71';
-
-            // 5. 정돈 후 경험치 적용
-            setTimeout(() => {
-              arenaView.style.display = 'none';
-              profileView.style.display = 'flex';
-
-              q.completed = true;
-              gainExp(q.exp);
-
-              if (q.type === 'once') {
-                quests.splice(index, 1);
-              }
-
-              saveData();
-              renderQuests();
-            }, 900);
-          }, 300);
+            monsterFighter.classList.remove('monster-hit');
+          }, 200);
         }, 150);
-      }, 250);
+      };
+
+      // 1회차 공격
+      triggerHit(1000);
+
+      // 시간 간격별 연속 다연타 연출
+      let hitInterval = setInterval(() => {
+        const randomDmg = Math.floor(Math.random() * 3000) + 2000;
+        triggerHit(randomDmg);
+      }, 750);
+
+      // 난이도별 총 유지 시간 후 몬스터 처치 마무리
+      setTimeout(() => {
+        clearInterval(hitInterval);
+
+        monsterFighter.classList.add('monster-die');
+        vsText.textContent = 'VICTORY!';
+        vsText.style.color = '#2ecc71';
+
+        setTimeout(() => {
+          arenaView.style.display = 'none';
+          profileView.style.display = 'flex';
+
+          q.completed = true;
+          gainExp(q.exp);
+
+          if (q.type === 'once') {
+            quests.splice(index, 1);
+          }
+
+          saveData();
+          renderQuests();
+        }, 800);
+      }, battleDuration);
     }
 
     function gainExp(amount) {
@@ -431,7 +452,6 @@
       renderQuests();
     }
 
-    /* 퀘스트 수락 완료 */
     document.getElementById('submitQuestBtn').addEventListener('click', () => {
       const input = document.getElementById('questInput');
       const text = input.value.trim();

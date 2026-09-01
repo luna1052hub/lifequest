@@ -30,7 +30,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
-    /* 최상위 레이어 흰색 노출 완전 차단 및 배경색 고정 */
+    /* 최상위 레이어 흰색 노출 완벽 차단 */
     html {
       background-color: var(--bg-color) !important;
       width: 100%;
@@ -50,7 +50,7 @@
       padding: 0;
     }
 
-    /* 모바일 화면에서 무조건 꽉 차도록 레이아웃 수정 */
+    /* 화면 전체를 가득 채우는 레이아웃 */
     .game-container {
       background: var(--card-bg);
       width: 100vw;
@@ -58,7 +58,6 @@
       height: 100dvh;
       border-radius: 0;
       padding: 12px;
-      /* 상단 Safe-Area(노치/상태바) 영역 여백 보정 */
       padding-top: max(20px, env(safe-area-inset-top));
       padding-bottom: max(12px, env(safe-area-inset-bottom));
       box-shadow: none;
@@ -162,6 +161,11 @@
 
     .quest-card {
       background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; flex-shrink: 0; gap: 8px;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .quest-card.completed-card {
+      opacity: 0.6;
+      background: #1a1c23;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -541,6 +545,7 @@
       if (exp === 40) document.getElementById('diff40Btn').classList.add('active-diff');
     }
 
+    /* 미완료 퀘스트 상단, 완료된 퀘스트 하단 자동 정렬 렌더링 */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
@@ -550,9 +555,14 @@
         return;
       }
 
-      quests.forEach((q, index) => {
+      // 미완료 퀘스트 우선, 완료된 퀘스트는 하단 배치
+      const sortedQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
+        .sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+
+      sortedQuests.forEach((q) => {
+        const index = q.originalIndex;
         const card = document.createElement('div');
-        card.className = 'quest-card';
+        card.className = `quest-card ${q.completed ? 'completed-card' : ''}`;
         
         const typeBadge = q.type === 'daily' 
           ? '<span class="quest-type-badge badge-daily">일일</span>' 
@@ -680,7 +690,7 @@
 
           saveData();
           isBattleProcessing = false;
-          renderQuests();
+          renderQuests(); // 정렬된 목록으로 자동 갱신
         }, 800);
       }, battleDuration);
     }

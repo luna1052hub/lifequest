@@ -30,7 +30,6 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
-    /* 최상위 레이어 흰색 노출 완벽 차단 */
     html {
       background-color: var(--bg-color) !important;
       width: 100%;
@@ -50,7 +49,6 @@
       padding: 0;
     }
 
-    /* 화면 전체를 가득 채우는 레이아웃 */
     .game-container {
       background: var(--card-bg);
       width: 100vw;
@@ -70,7 +68,6 @@
       overflow: hidden;
     }
 
-    /* 캐릭터 프로필 & 전투 스테이지 */
     .battle-stage {
       background: #21242d; 
       border-radius: 14px; 
@@ -104,7 +101,6 @@
     }
     .icon-add-btn:active { transform: scale(0.9); }
 
-    /* 다이나믹 전투 레이어 */
     .battle-arena {
       display: none; width: 100%; justify-content: space-between; align-items: center; padding: 0 15px; position: relative; height: 100%;
     }
@@ -154,7 +150,6 @@
 
     .monster-die { transform: translateY(30px) rotate(180deg) scale(0) !important; opacity: 0; transition: all 0.4s ease-in; }
 
-    /* 퀘스트 목록 */
     .quest-list-container { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .quest-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-right: 2px; }
     .empty-msg { text-align: center; color: #868e96; font-size: 13px; margin: auto; line-height: 1.6; }
@@ -189,7 +184,6 @@
     .remove-btn:hover { color: #e74c3c; }
     .clear-btn:disabled, .fail-btn:disabled, .remove-btn:disabled { background: #4a4e69 !important; cursor: not-allowed; opacity: 0.5; }
 
-    /* 양피지 모달 */
     .input-page-modal {
       display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
       background: #f4e4bc;
@@ -228,7 +222,6 @@
     .opt-btn-medium.active-diff { background: #ffb300; color: #3e2723; border-color: #ff8f00; }
     .opt-btn-hard.active-diff { background: #e53935; color: white; border-color: #c62828; }
 
-    /* 모달 레이어 */
     .level-up-modal, .avatar-select-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
       justify-content: center; align-items: center; z-index: 100; padding: 20px;
@@ -339,6 +332,15 @@
   </div>
 
   <script>
+    /* PWA 서비스 워커 등록 (크롬 앱 인식을 위한 필수 과정) */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('SW 등록 실패:', err);
+        });
+      });
+    }
+
     let level = parseInt(localStorage.getItem('quest_level')) || 1;
     let currentExp = parseInt(localStorage.getItem('quest_exp')) || 0;
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
@@ -353,7 +355,6 @@
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
-    /* 사운드 엔진 */
     let audioCtx = null;
 
     function initAudio() {
@@ -545,7 +546,6 @@
       if (exp === 40) document.getElementById('diff40Btn').classList.add('active-diff');
     }
 
-    /* 미완료 퀘스트 상단, 완료된 퀘스트 하단 자동 정렬 렌더링 */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
@@ -555,7 +555,6 @@
         return;
       }
 
-      // 미완료 퀘스트 우선, 완료된 퀘스트는 하단 배치
       const sortedQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
         .sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
@@ -690,7 +689,7 @@
 
           saveData();
           isBattleProcessing = false;
-          renderQuests(); // 정렬된 목록으로 자동 갱신
+          renderQuests();
         }, 800);
       }, battleDuration);
     }

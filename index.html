@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- 상단 상태바 메타 태그 (iOS 및 Android) -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LIFE QUEST - RPG Todo</title>
+  
+  <!-- 모바일 상단 상태바 게임 배경색 지정 -->
   <meta name="theme-color" content="#1a1c23">
+  <meta name="msapplication-navbutton-color" content="#1a1c23">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <!-- black-translucent를 적용해야 아이폰 시계 영역까지 배경색이 확장됩니다 -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
@@ -26,23 +30,35 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
-    /* 최상위 뷰포트 배경색을 강제로 지정하여 흰색 여백 차단 */
+    /* 최상위 레이어 흰색 노출 완전 차단 및 배경색 고정 */
     html {
-      background-color: #1a1c23 !important;
+      background-color: var(--bg-color) !important;
       width: 100%;
       height: 100%;
       height: 100dvh;
+      overflow: hidden;
     }
 
-    /* 화면 전체를 여백 없이 꽉 채우도록 수정 */
-    .game-container {
-      background: var(--card-bg);
+    body {
       width: 100%;
       height: 100%;
       height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg-color) !important;
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 모바일 화면에서 무조건 꽉 차도록 레이아웃 수정 */
+    .game-container {
+      background: var(--card-bg);
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       border-radius: 0;
-      padding: 16px 12px 12px 12px;
-      /* 모바일 상단 Safe-Area(노치/상태바) 대응 여백 처리 */
+      padding: 12px;
+      /* 상단 Safe-Area(노치/상태바) 영역 여백 보정 */
       padding-top: max(20px, env(safe-area-inset-top));
       padding-bottom: max(12px, env(safe-area-inset-bottom));
       box-shadow: none;
@@ -53,24 +69,6 @@
       justify-content: space-between;
       position: relative;
       overflow: hidden;
-    }
-
-    /* PC 및 큰 화면에서만 카드 형태로 노출 */
-    @media (min-width: 600px) and (min-height: 700px) {
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-      }
-      .game-container {
-        max-width: 420px;
-        height: 92vh;
-        max-height: 760px;
-        border-radius: 20px;
-        border: 2px solid var(--border-color);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      }
     }
 
     /* 캐릭터 프로필 & 전투 스테이지 */

@@ -21,7 +21,6 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
-    /* 모바일 브라우저 주소창 & 하단 툴바 가림 완벽 방지 */
     html, body {
       width: 100%;
       height: 100%;
@@ -34,7 +33,6 @@
       align-items: center;
     }
 
-    /* 메인 컨테이너 모발 상하단 여백(Safe Area) 자동 적용 */
     .game-container {
       background: var(--card-bg);
       width: 100%;
@@ -55,7 +53,6 @@
       overflow: hidden;
     }
 
-    /* 데스크톱/PC 환경 지원용 가두기 라운딩 */
     @media (min-height: 650px) and (min-width: 440px) {
       .game-container {
         height: 92vh;
@@ -85,7 +82,6 @@
     .exp-bar-fill { background: linear-gradient(90deg, #f1c40f, #e67e22); height: 100%; width: 0%; transition: width 0.3s ease; }
     .exp-text { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: 700; top: 0; line-height: 14px; color: #fff; text-shadow: 1px 1px 2px #000; }
 
-    /* 우측 상단 소형 버튼 */
     .icon-add-btn {
       background: var(--accent-color); color: white; border: none; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s; flex-shrink: 0;
     }
@@ -104,7 +100,6 @@
     .hit-effect { position: absolute; right: 20px; font-size: 42px; opacity: 0; z-index: 10; pointer-events: none; }
     .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 12px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
 
-    /* 전투 연출 클래스 */
     .stage-shake { animation: shake 0.3s ease-in-out; }
     @keyframes shake {
       0%, 100% { transform: translate(0, 0); }
@@ -126,31 +121,35 @@
 
     .monster-die { transform: translateY(40px) rotate(180deg) scale(0) !important; opacity: 0; transition: all 0.4s ease-in; }
 
-    /* 퀘스트 목록 (유연한 반응형 높이) */
+    /* 퀘스트 목록 */
     .quest-list-container { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .quest-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-right: 2px; }
     .empty-msg { text-align: center; color: #868e96; font-size: 13px; margin: auto; line-height: 1.6; }
 
     .quest-card {
-      background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; flex-shrink: 0;
+      background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; flex-shrink: 0; gap: 8px;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .quest-info { display: flex; flex-direction: column; gap: 3px; }
+    .quest-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
     .quest-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; word-break: break-all; }
-    .quest-type-badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; }
+    .quest-type-badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; flex-shrink: 0; }
     .badge-daily { background: #3498db; color: white; }
     .badge-once { background: #9b59b6; color: white; }
     .difficulty-tag { font-size: 10px; color: #868e96; }
 
-    .quest-actions { display: flex; gap: 6px; align-items: center; }
+    .quest-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
     .clear-btn {
-      background: var(--success-color); color: white; border: none; padding: 6px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      background: var(--success-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
     }
     .fail-btn {
-      background: var(--danger-color); color: white; border: none; padding: 6px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      background: var(--danger-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
     }
-    .clear-btn:disabled, .fail-btn:disabled { background: #4a4e69; cursor: not-allowed; opacity: 0.5; }
+    .remove-btn {
+      background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; margin-left: 2px;
+    }
+    .remove-btn:hover { color: #e74c3c; }
+    .clear-btn:disabled, .fail-btn:disabled { background: #4a4e69 !important; cursor: not-allowed; opacity: 0.5; }
 
     /* 양피지 모달 */
     .input-page-modal {
@@ -191,7 +190,7 @@
     .opt-btn-medium.active-diff { background: #ffb300; color: #3e2723; border-color: #ff8f00; }
     .opt-btn-hard.active-diff { background: #e53935; color: white; border-color: #c62828; }
 
-    /* 레벨업 & 캐릭터 변경 모달 */
+    /* 모달 레이어 */
     .level-up-modal, .avatar-select-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
       justify-content: center; align-items: center; z-index: 100; padding: 20px;
@@ -215,9 +214,7 @@
 <body>
 
   <div class="game-container">
-    <!-- 캐릭터 프로필 및 전투 스테이지 -->
     <div class="battle-stage" id="battleStage">
-      <!-- 1) 캐릭터 프로필 -->
       <div class="hero-profile" id="heroProfileView">
         <div class="avatar-wrapper" onclick="openAvatarModal()">
           <div class="hero-avatar" id="heroAvatar">⚔️</div>
@@ -230,11 +227,9 @@
             <div class="exp-text" id="expText">0 / 100 EXP</div>
           </div>
         </div>
-        <!-- 우측 상단 소형 퀘스트 추가 버튼 -->
         <button class="icon-add-btn" id="openAddModalBtn">➕</button>
       </div>
 
-      <!-- 2) 전투 연출 무대 -->
       <div class="battle-arena" id="battleArenaView">
         <div class="fighter" id="heroFighter">⚔️</div>
         <div class="vs-text" id="vsText">VS</div>
@@ -244,12 +239,10 @@
       </div>
     </div>
 
-    <!-- 퀘스트 리스트 -->
     <div class="quest-list-container">
       <div class="quest-list" id="questList"></div>
     </div>
 
-    <!-- 양피지 모달 -->
     <div class="input-page-modal" id="inputPageModal">
       <div class="modal-header">
         <h3>📜 퀘스트 수락서 작성</h3>
@@ -284,7 +277,6 @@
     </div>
   </div>
 
-  <!-- 레벨업 모달 -->
   <div class="level-up-modal" id="levelUpModal">
     <div class="modal-box">
       <h2>LEVEL UP!</h2>
@@ -293,7 +285,6 @@
     </div>
   </div>
 
-  <!-- 캐릭터 선택 모달 -->
   <div class="avatar-select-modal" id="avatarSelectModal">
     <div class="modal-box">
       <h2>HERO SELECT</h2>
@@ -445,21 +436,29 @@
             <div class="difficulty-tag">난이도: ${diffText}</div>
           </div>
           <div class="quest-actions">
-            <button class="clear-btn" ${q.completed ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
+            <button class="clear-btn" id="btn-clear-${index}" ${q.completed ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
               ${q.completed ? '완료됨 ✔' : '클리어'}
             </button>
-            <button class="fail-btn" ${q.completed ? 'disabled' : ''} onclick="failQuest(${index})">
+            <button class="fail-btn" id="btn-fail-${index}" ${q.completed ? 'disabled' : ''} onclick="failQuest(${index})">
               실패
             </button>
+            <button class="remove-btn" title="단순 삭제" onclick="removeQuestWithoutPenalty(${index})">✕</button>
           </div>
         `;
         listEl.appendChild(card);
       });
     }
 
+    /* 클리어 처리 (연타 클릭 방지 포함) */
     function clearQuestWithBattle(index) {
       const q = quests[index];
       if (q.completed) return;
+
+      // 즉시 버튼 비활성화로 연타 방지
+      const clearBtn = document.getElementById(`btn-clear-${index}`);
+      const failBtn = document.getElementById(`btn-fail-${index}`);
+      if (clearBtn) clearBtn.disabled = true;
+      if (failBtn) failBtn.disabled = true;
 
       const battleStage = document.getElementById('battleStage');
       const profileView = document.getElementById('heroProfileView');
@@ -567,8 +566,16 @@
       updateProfile();
     }
 
+    /* 수동 실패 처리 (연타 클릭 방지 포함) */
     function failQuest(index) {
       const q = quests[index];
+      if (q.completed) return;
+
+      const clearBtn = document.getElementById(`btn-clear-${index}`);
+      const failBtn = document.getElementById(`btn-fail-${index}`);
+      if (clearBtn) clearBtn.disabled = true;
+      if (failBtn) failBtn.disabled = true;
+
       const penaltyExp = q.exp;
 
       const profileView = document.getElementById('heroProfileView');
@@ -595,6 +602,13 @@
         loseExp(penaltyExp);
         renderQuests();
       }, 1200);
+    }
+
+    /* 오타 수정 및 패널티 없는 단순 삭제 버튼 로직 */
+    function removeQuestWithoutPenalty(index) {
+      quests.splice(index, 1);
+      saveData();
+      renderQuests();
     }
 
     function gainExp(amount) {

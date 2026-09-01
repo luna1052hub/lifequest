@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LIFE QUEST - RPG Todo</title>
-  
-  <!-- 모바일 상단 상태바 게임 배경색 지정 -->
+<!-- 상단 상태바 메타 태그 (iOS 및 Android) -->
   <meta name="theme-color" content="#1a1c23">
-  <meta name="msapplication-navbutton-color" content="#1a1c23">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- black-translucent를 적용해야 아이폰 시계 영역까지 배경색이 확장됩니다 -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
@@ -30,16 +26,12 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
-    /* 최상위 레이어 바탕색 지정 및 여백 완전 제거 */
-    html, body {
+    /* 최상위 뷰포트 배경색을 강제로 지정하여 흰색 여백 차단 */
+    html {
+      background-color: #1a1c23 !important;
       width: 100%;
       height: 100%;
       height: 100dvh;
-      overflow: hidden;
-      background-color: var(--bg-color) !important;
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
     }
 
     /* 화면 전체를 여백 없이 꽉 채우도록 수정 */

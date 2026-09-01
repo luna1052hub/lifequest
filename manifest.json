@@ -1,8 +1,11 @@
 {
-  "name": "LIFE QUEST",
   "short_name": "LifeQuest",
-  "start_url": "./index.html",
+  "name": "LIFE QUEST",
+  "id": "/lifequest/",
+  "start_url": "/lifequest/index.html",
+  "scope": "/lifequest/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#1a1c23",
   "theme_color": "#1a1c23",
   "icons": [

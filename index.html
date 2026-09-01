@@ -64,9 +64,9 @@
       }
     }
 
-    /* 캐릭터 프로필 & 전투 스테이지 */
+    /* 캐릭터 프로필 & 전투 스테이지 (높이 확장으로 데미지 짤림 방지) */
     .battle-stage {
-      background: #21242d; border-radius: 14px; padding: 10px 12px; border: 1px solid var(--border-color); position: relative; min-height: 90px; display: flex; align-items: center; overflow: hidden; flex-shrink: 0;
+      background: #21242d; border-radius: 14px; padding: 12px; border: 1px solid var(--border-color); position: relative; min-height: 115px; display: flex; align-items: center; overflow: hidden; flex-shrink: 0;
     }
 
     .hero-profile { display: flex; align-items: center; gap: 10px; width: 100%; }
@@ -89,18 +89,24 @@
     }
     .icon-add-btn:active { transform: scale(0.9); }
 
-    /* 다이나믹 전투 레이어 */
+    /* 다이나믹 전투 레이어 (여백 확대) */
     .battle-arena {
       display: none; width: 100%; justify-content: space-between; align-items: center; padding: 0 15px; position: relative; height: 100%;
     }
     .fighter { font-size: 38px; transition: transform 0.15s ease-out, opacity 0.3s ease; position: relative; z-index: 2; }
     .vs-text { 
-      font-family: 'Press Start 2P', cursive; font-size: 13px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000; text-align: center;
+      font-family: 'Press Start 2P', cursive; font-size: 12px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000; text-align: center;
     }
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.2); } }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
 
-    .hit-effect { position: absolute; right: 20px; font-size: 42px; opacity: 0; z-index: 10; pointer-events: none; }
-    .damage-text { position: absolute; right: 10px; top: -10px; font-family: 'Press Start 2P', cursive; font-size: 12px; color: #ff0055; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; }
+    /* 타격 이펙트 및 데미지 숫자가 짤리지 않도록 위치 보정 */
+    .hit-effect { position: absolute; font-size: 38px; opacity: 0; z-index: 10; pointer-events: none; }
+    .hit-effect-monster { right: 20px; }
+    .hit-effect-hero { left: 20px; }
+
+    .damage-text { position: absolute; font-family: 'Press Start 2P', cursive; font-size: 11px; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; white-space: nowrap; }
+    .damage-text-monster { right: 5px; top: 2px; color: #ff0055; }
+    .damage-text-hero { left: 5px; top: 2px; color: #e74c3c; }
 
     .stage-shake { animation: shake 0.3s ease-in-out; }
     @keyframes shake {
@@ -114,25 +120,25 @@
     .hero-dash { transform: translateX(80px) scale(1.3) rotate(15deg) !important; }
     .monster-hit { animation: flashRed 0.15s 2; }
     
-    /* 용사 피격 및 소멸 애니메이션 (2번 요구사항) */
-    .hero-hit-die { animation: heroFlashAndFade 0.8s ease-out forwards; }
+    /* 내 캐릭터 피격 애니메이션 */
+    .hero-hit-die { animation: heroFlashAndFade 0.9s ease-out forwards; }
     @keyframes heroFlashAndFade {
       0% { opacity: 1; filter: none; transform: scale(1); }
       25% { opacity: 0.3; filter: drop-shadow(0 0 15px #e74c3c) sepia(100%) hue-rotate(-50deg) saturate(600%); transform: scale(1.1) rotate(-10deg); }
       50% { opacity: 1; filter: none; transform: scale(0.95); }
       75% { opacity: 0.2; filter: drop-shadow(0 0 15px #e74c3c); transform: scale(1.05) rotate(10deg); }
-      100% { opacity: 0; transform: translateY(20px) scale(0); }
+      100% { opacity: 0; transform: translateY(15px) scale(0); }
     }
 
     @keyframes flashRed { 0%, 100% { opacity: 1; filter: none; } 50% { opacity: 0.2; filter: drop-shadow(0 0 15px #e74c3c) sepia(100%) hue-rotate(-50deg) saturate(600%); } }
 
     .hit-active { animation: popHit 0.4s ease-out forwards; }
-    @keyframes popHit { 0% { opacity: 0; transform: scale(0.3) rotate(-20deg); } 50% { opacity: 1; transform: scale(1.5) rotate(10deg); } 100% { opacity: 0; transform: scale(1); } }
+    @keyframes popHit { 0% { opacity: 0; transform: scale(0.3) rotate(-20deg); } 50% { opacity: 1; transform: scale(1.3) rotate(10deg); } 100% { opacity: 0; transform: scale(1); } }
 
     .damage-active { animation: floatUp 0.6s ease-out forwards; }
-    @keyframes floatUp { 0% { opacity: 0; transform: translateY(10px); } 30% { opacity: 1; transform: translateY(-10px) scale(1.2); } 100% { opacity: 0; transform: translateY(-30px); } }
+    @keyframes floatUp { 0% { opacity: 0; transform: translateY(5px); } 30% { opacity: 1; transform: translateY(-12px) scale(1.1); } 100% { opacity: 0; transform: translateY(-25px); } }
 
-    .monster-die { transform: translateY(40px) rotate(180deg) scale(0) !important; opacity: 0; transition: all 0.4s ease-in; }
+    .monster-die { transform: translateY(30px) rotate(180deg) scale(0) !important; opacity: 0; transition: all 0.4s ease-in; }
 
     /* 퀘스트 목록 */
     .quest-list-container { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
@@ -252,8 +258,8 @@
         <div class="fighter" id="heroFighter">⚔️</div>
         <div class="vs-text" id="vsText">VS</div>
         <div class="fighter" id="monsterFighter">👾</div>
-        <div class="hit-effect" id="hitEffect">💥</div>
-        <div class="damage-text" id="damageText">CRITICAL!</div>
+        <div class="hit-effect hit-effect-monster" id="hitEffect">💥</div>
+        <div class="damage-text damage-text-monster" id="damageText">CRITICAL!</div>
       </div>
     </div>
 
@@ -326,7 +332,7 @@
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
-    /* Web Audio API 사운드 엔진 */
+    /* 사운드 엔진 보정 */
     let audioCtx = null;
 
     function initAudio() {
@@ -373,22 +379,24 @@
       });
     }
 
-    /* 확실한 실패음 보정 (1번 요구사항) */
+    /* 명확하고 또렷한 8비트 실패 피격음 (1번 요구사항 보정) */
     function play8BitFailSound() {
       initAudio();
-      const notes = [220, 180, 140, 90];
-      notes.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.12);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.1);
-        osc.stop(audioCtx.currentTime + idx * 0.1 + 0.12);
-      });
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.25);
+      
+      gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
     }
 
     function getMaxExp(lvl = level) {
@@ -584,8 +592,9 @@
       
       heroFighter.className = 'fighter';
       monsterFighter.className = 'fighter';
-      hitEffect.className = 'hit-effect';
-      damageText.className = 'damage-text';
+      
+      hitEffect.className = 'hit-effect hit-effect-monster';
+      damageText.className = 'damage-text damage-text-monster';
       
       vsText.textContent = 'VS';
       vsText.style.color = '#e74c3c';
@@ -670,7 +679,7 @@
       updateProfile();
     }
 
-    /* 용사 피격 및 스르륵 사라지는 실패 애니메이션 (1, 2번 요구사항) */
+    /* 내 캐릭터 피격 애니메이션 및 EXP 차감 데미지 표시 (2번 요구사항) */
     function failQuest(index) {
       const q = quests[index];
       if (q.completed) return;
@@ -688,6 +697,8 @@
       const heroFighter = document.getElementById('heroFighter');
       const monsterFighter = document.getElementById('monsterFighter');
       const vsText = document.getElementById('vsText');
+      const hitEffect = document.getElementById('hitEffect');
+      const damageText = document.getElementById('damageText');
 
       profileView.style.display = 'none';
       arenaView.style.display = 'flex';
@@ -698,14 +709,22 @@
       heroFighter.className = 'fighter';
       monsterFighter.className = 'fighter';
 
-      vsText.innerHTML = `QUEST FAILED!<br><span style="font-size:10px; color:#ff0055;">-${penaltyExp} EXP</span>`;
+      /* 이펙트 위치를 내 캐릭터 쪽으로 설정 */
+      hitEffect.className = 'hit-effect hit-effect-hero';
+      damageText.className = 'damage-text damage-text-hero';
+
+      vsText.innerHTML = `QUEST FAILED!`;
       vsText.style.color = '#e74c3c';
       vsText.style.opacity = '1';
 
-      /* 실패 사운드 및 내 캐릭터 타격 후 피격 감쇄(Fade) 연출 */
+      /* 실패 사운드 및 내 캐릭터 번쩍이며 타격받는 연출 */
       play8BitFailSound();
       battleStage.classList.add('stage-shake');
       heroFighter.classList.add('hero-hit-die');
+
+      hitEffect.classList.add('hit-active');
+      damageText.classList.add('damage-active');
+      damageText.textContent = `-${penaltyExp} EXP`;
 
       setTimeout(() => {
         battleStage.classList.remove('stage-shake');
@@ -714,6 +733,9 @@
       setTimeout(() => {
         arenaView.style.display = 'none';
         profileView.style.display = 'flex';
+
+        hitEffect.classList.remove('hit-active');
+        damageText.classList.remove('damage-active');
         heroFighter.classList.remove('hero-hit-die');
 
         quests.splice(index, 1);

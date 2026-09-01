@@ -21,6 +21,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
+    /* 모바일 브라우저 상/하단 UI 간섭 완전 방지 및 Safe Area 보정 */
     html, body {
       width: 100%;
       height: 100%;
@@ -31,6 +32,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
     .game-container {
@@ -38,11 +43,9 @@
       width: 100%;
       max-width: 420px;
       height: 100%;
-      height: 100dvh;
+      max-height: 100dvh;
       border-radius: 0;
       padding: 12px;
-      padding-top: max(12px, env(safe-area-inset-top));
-      padding-bottom: max(12px, env(safe-area-inset-bottom));
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       border: none;
       display: flex;
@@ -311,16 +314,23 @@
       return lvl * 100;
     }
 
+    /* 한국 표준시(KST, Asia/Seoul) 기준 YYYY-MM-DD 날짜 반환 */
+    function getKSTDateString() {
+      const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' });
+      return formatter.format(new Date()); // 예: "2026-09-01"
+    }
+
+    /* 한국시간 자정이 지나면 미완료 일일 퀘스트 자동 실패 및 리셋 */
     function checkDailyReset() {
-      const today = new Date().toDateString();
-      if (lastResetDate !== today && lastResetDate !== '') {
+      const todayKST = getKSTDateString();
+      if (lastResetDate !== todayKST && lastResetDate !== '') {
         let totalPenalty = 0;
         quests.forEach(q => {
           if (q.type === 'daily') {
             if (!q.completed) {
               totalPenalty += q.exp;
             }
-            q.completed = false;
+            q.completed = false; // 새로운 날짜에 재활성화
           }
         });
 
@@ -328,11 +338,11 @@
           loseExp(totalPenalty);
         }
 
-        lastResetDate = today;
+        lastResetDate = todayKST;
         localStorage.setItem('quest_last_reset', lastResetDate);
         saveData();
       } else if (lastResetDate === '') {
-        lastResetDate = today;
+        lastResetDate = todayKST;
         localStorage.setItem('quest_last_reset', lastResetDate);
       }
     }
@@ -449,12 +459,10 @@
       });
     }
 
-    /* 클리어 처리 (연타 클릭 방지 포함) */
     function clearQuestWithBattle(index) {
       const q = quests[index];
       if (q.completed) return;
 
-      // 즉시 버튼 비활성화로 연타 방지
       const clearBtn = document.getElementById(`btn-clear-${index}`);
       const failBtn = document.getElementById(`btn-fail-${index}`);
       if (clearBtn) clearBtn.disabled = true;
@@ -566,7 +574,6 @@
       updateProfile();
     }
 
-    /* 수동 실패 처리 (연타 클릭 방지 포함) */
     function failQuest(index) {
       const q = quests[index];
       if (q.completed) return;
@@ -604,7 +611,6 @@
       }, 1200);
     }
 
-    /* 오타 수정 및 패널티 없는 단순 삭제 버튼 로직 */
     function removeQuestWithoutPenalty(index) {
       quests.splice(index, 1);
       saveData();

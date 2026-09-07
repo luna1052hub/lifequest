@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>LIFE QUEST - RPG Todo</title>
   
@@ -20,6 +20,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
     :root {
       --bg-color: #1a1c23;
@@ -57,11 +58,42 @@
       border: none;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       justify-content: space-between;
       position: relative;
       overflow: hidden;
     }
+
+    /* 상단 유틸리티 바 (오늘 날짜 & 알림 버튼) */
+    .top-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #21242d;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .today-date-text {
+      color: #f39c12;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .notification-btn {
+      background: #3a3f51;
+      color: #fff;
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .notification-btn:active { transform: scale(0.95); }
 
     .battle-stage {
       background: #21242d; 
@@ -244,6 +276,12 @@
 <body>
 
   <div class="game-container">
+    <!-- 상단 유틸리티 바: 오늘 날짜 및 알림 허용 버튼 -->
+    <div class="top-header-bar">
+      <div class="today-date-text" id="todayDateView">📅 날짜 로딩 중...</div>
+      <button class="notification-btn" id="notifToggleBtn" onclick="requestNotificationPermission()">🔔 알림 켜기</button>
+    </div>
+
     <div class="battle-stage" id="battleStage">
       <div class="hero-profile" id="heroProfileView">
         <div class="avatar-wrapper" onclick="openAvatarModal()">
@@ -348,6 +386,64 @@
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
+    /* 오늘 날짜 표기 기능 */
+    function updateTodayDateDisplay() {
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+      const dateStr = now.toLocaleDateString('ko-KR', options);
+      document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
+    }
+
+    /* 푸시/로컬 알림 기능 */
+    function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        alert('이 브라우저는 모바일 알림을 지원하지 않습니다.');
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        updateNotificationBtnStatus();
+        if (permission === 'granted') {
+          sendNotification('🔔 알림 설정 완료!', 'Life Quest 레벨 업 및 미션 성공/실패 알림이 켜졌습니다.');
+        } else if (permission === 'denied') {
+          alert('알림 권한이 거부되어 있습니다. 스마트폰 설정에서 알림을 허용해 주세요.');
+        }
+      });
+    }
+
+    function updateNotificationBtnStatus() {
+      const btn = document.getElementById('notifToggleBtn');
+      if (!('Notification' in window)) {
+        btn.style.display = 'none';
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        btn.textContent = '🔔 알림 켜짐';
+        btn.style.background = '#2ecc71';
+        btn.style.color = '#fff';
+      } else {
+        btn.textContent = '🔔 알림 켜기';
+        btn.style.background = '#3a3f51';
+      }
+    }
+
+    function sendNotification(title, body) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, {
+              body: body,
+              icon: 'https://via.placeholder.com/192/f39c12/ffffff?text=QUEST',
+              badge: 'https://via.placeholder.com/192/f39c12/ffffff?text=QUEST',
+              vibrate: [100, 50, 100]
+            });
+          });
+        } else {
+          new Notification(title, { body: body });
+        }
+      }
+    }
+
+    /* 사운드 엔진 */
     let audioCtx = null;
 
     function initAudio() {
@@ -674,6 +770,10 @@
           profileView.style.display = 'flex';
 
           q.completed = true;
+          
+          /* 미션 성공 알림 발송 */
+          sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
+
           gainExp(q.exp);
 
           if (q.type === 'once') {
@@ -768,6 +868,9 @@
         damageText.classList.remove('damage-active');
         heroFighter.classList.remove('hero-hit-die');
 
+        /* 미션 실패 알림 발송 */
+        sendNotification('💥 퀘스트 실패!', `'${q.text}' 퀘스트에 실패했습니다. (-${penaltyExp} EXP 감가)`);
+
         quests.splice(index, 1);
         loseExp(penaltyExp);
         
@@ -797,6 +900,9 @@
     }
 
     function showLevelUpModal() {
+      /* 레벨 업 알림 발송 */
+      sendNotification('🎉 LEVEL UP!', `축하합니다! LV. ${level} 용사로 성장했습니다!`);
+      
       document.getElementById('levelUpMsg').textContent = `축하합니다! LV. ${level} 용사로 성장했습니다!\n다음 레벨 필요 경험치: ${getMaxExp()} EXP`;
       document.getElementById('levelUpModal').style.display = 'flex';
     }
@@ -823,6 +929,9 @@
       document.getElementById('inputPageModal').style.display = 'none';
     });
 
+    /* 초기화 및 실행 */
+    updateTodayDateDisplay();
+    updateNotificationBtnStatus();
     checkDailyReset();
     updateProfile();
     renderQuests();

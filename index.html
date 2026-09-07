@@ -239,6 +239,19 @@
       width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700;
     }
 
+    /* 날짜 선택 인풋 스타일 */
+    .date-picker-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid #a1887f;
+      background: #fff8e1;
+      color: #3e2723;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .btn-toggle-box { display: flex; gap: 6px; }
     .opt-btn {
       flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s;
@@ -333,6 +346,12 @@
           </div>
         </div>
 
+        <!-- 1회성 퀘스트 전용 날짜 선택 그룹 -->
+        <div class="form-group" id="dateGroup" style="display: none;">
+          <label>목표 날짜 지정 (달력 선택)</label>
+          <input type="date" class="date-picker-input" id="questDateInput">
+        </div>
+
         <div class="form-group">
           <label>난이도 설정</label>
           <div class="btn-toggle-box">
@@ -386,7 +405,6 @@
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
-    /* 오늘 날짜 표기 기능 */
     function updateTodayDateDisplay() {
       const now = new Date();
       const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
@@ -394,7 +412,6 @@
       document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
     }
 
-    /* 푸시/로컬 알림 기능 */
     function requestNotificationPermission() {
       if (!('Notification' in window)) {
         alert('이 브라우저는 모바일 알림을 지원하지 않습니다.');
@@ -443,7 +460,6 @@
       }
     }
 
-    /* 사운드 엔진 */
     let audioCtx = null;
 
     function initAudio() {
@@ -609,6 +625,8 @@
 
     document.getElementById('openAddModalBtn').addEventListener('click', () => {
       if (isBattleProcessing) return;
+      // 작성 모달 열 때 오늘 날짜 기본 세팅
+      document.getElementById('questDateInput').value = getKSTDateString();
       document.getElementById('inputPageModal').style.display = 'flex';
     });
 
@@ -620,8 +638,16 @@
       selectedType = type;
       document.getElementById('typeDailyBtn').classList.remove('active-type');
       document.getElementById('typeOnceBtn').classList.remove('active-type');
-      if (type === 'daily') document.getElementById('typeDailyBtn').classList.add('active-type');
-      else document.getElementById('typeOnceBtn').classList.add('active-type');
+      
+      const dateGroup = document.getElementById('dateGroup');
+
+      if (type === 'daily') {
+        document.getElementById('typeDailyBtn').classList.add('active-type');
+        dateGroup.style.display = 'none';
+      } else {
+        document.getElementById('typeOnceBtn').classList.add('active-type');
+        dateGroup.style.display = 'flex';
+      }
     }
 
     function selectDiff(exp) {
@@ -657,11 +683,12 @@
           : '<span class="quest-type-badge badge-once">일반</span>';
 
         const diffText = q.exp === 10 ? '쉬움 (+10)' : (q.exp === 40 ? '어려움 (+40)' : '보통 (+20)');
+        const targetDateText = (q.type === 'once' && q.targetDate) ? ` | 📅 ${q.targetDate}` : '';
 
         card.innerHTML = `
           <div class="quest-info">
             <div class="quest-title">${typeBadge} ${q.text}</div>
-            <div class="difficulty-tag">난이도: ${diffText}</div>
+            <div class="difficulty-tag">난이도: ${diffText}${targetDateText}</div>
           </div>
           <div class="quest-actions">
             <button class="clear-btn" id="btn-clear-${index}" ${q.completed || isBattleProcessing ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
@@ -771,7 +798,6 @@
 
           q.completed = true;
           
-          /* 미션 성공 알림 발송 */
           sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
 
           gainExp(q.exp);
@@ -868,7 +894,6 @@
         damageText.classList.remove('damage-active');
         heroFighter.classList.remove('hero-hit-die');
 
-        /* 미션 실패 알림 발송 */
         sendNotification('💥 퀘스트 실패!', `'${q.text}' 퀘스트에 실패했습니다. (-${penaltyExp} EXP 감가)`);
 
         quests.splice(index, 1);
@@ -900,7 +925,6 @@
     }
 
     function showLevelUpModal() {
-      /* 레벨 업 알림 발송 */
       sendNotification('🎉 LEVEL UP!', `축하합니다! LV. ${level} 용사로 성장했습니다!`);
       
       document.getElementById('levelUpMsg').textContent = `축하합니다! LV. ${level} 용사로 성장했습니다!\n다음 레벨 필요 경험치: ${getMaxExp()} EXP`;
@@ -916,10 +940,13 @@
       const text = input.value.trim();
       if (!text) return;
 
+      const dateVal = document.getElementById('questDateInput').value || getKSTDateString();
+
       quests.push({
         text: text,
         type: selectedType,
         exp: selectedDiff,
+        targetDate: selectedType === 'once' ? dateVal : null,
         completed: false
       });
 
@@ -929,7 +956,6 @@
       document.getElementById('inputPageModal').style.display = 'none';
     });
 
-    /* 초기화 및 실행 */
     updateTodayDateDisplay();
     updateNotificationBtnStatus();
     checkDailyReset();

@@ -239,7 +239,6 @@
       width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700;
     }
 
-    /* 날짜 선택 인풋 스타일 */
     .date-picker-input {
       width: 100%;
       padding: 10px;
@@ -346,7 +345,6 @@
           </div>
         </div>
 
-        <!-- 1회성 퀘스트 전용 날짜 선택 그룹 -->
         <div class="form-group" id="dateGroup" style="display: none;">
           <label>목표 날짜 지정 (달력 선택)</label>
           <input type="date" class="date-picker-input" id="questDateInput">
@@ -420,7 +418,7 @@
       Notification.requestPermission().then(permission => {
         updateNotificationBtnStatus();
         if (permission === 'granted') {
-          sendNotification('🔔 알림 설정 완료!', 'Life Quest 레벨 업 및 미션 성공/실패 알림이 켜졌습니다.');
+          sendNotification('🔔 알림 설정 완료!', 'Life Quest 레벨 업 및 시간별 알림이 켜졌습니다.');
         } else if (permission === 'denied') {
           alert('알림 권한이 거부되어 있습니다. 스마트폰 설정에서 알림을 허용해 주세요.');
         }
@@ -625,7 +623,6 @@
 
     document.getElementById('openAddModalBtn').addEventListener('click', () => {
       if (isBattleProcessing) return;
-      // 작성 모달 열 때 오늘 날짜 기본 세팅
       document.getElementById('questDateInput').value = getKSTDateString();
       document.getElementById('inputPageModal').style.display = 'flex';
     });
@@ -661,17 +658,23 @@
       if (exp === 40) document.getElementById('diff40Btn').classList.add('active-diff');
     }
 
+    /* 오늘 날짜에 지정된 1회성 퀘스트 및 일일 퀘스트만 필터링하여 렌더링 */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
 
-      if (quests.length === 0) {
-        listEl.innerHTML = '<div class="empty-msg">📜 수락한 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 퀘스트를 수락해 보세요!</div>';
+      const todayKST = getKSTDateString();
+
+      // 오늘 날짜 필터링 (일일 퀘스트 OR 오늘이 목표인 1회성 퀘스트)
+      const visibleQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
+        .filter(q => q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST));
+
+      if (visibleQuests.length === 0) {
+        listEl.innerHTML = '<div class="empty-msg">📜 오늘 수행할 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 새 퀘스트를 등록해 보세요!</div>';
         return;
       }
 
-      const sortedQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
-        .sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+      const sortedQuests = visibleQuests.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
 
       sortedQuests.forEach((q) => {
         const index = q.originalIndex;
@@ -683,12 +686,11 @@
           : '<span class="quest-type-badge badge-once">일반</span>';
 
         const diffText = q.exp === 10 ? '쉬움 (+10)' : (q.exp === 40 ? '어려움 (+40)' : '보통 (+20)');
-        const targetDateText = (q.type === 'once' && q.targetDate) ? ` | 📅 ${q.targetDate}` : '';
 
         card.innerHTML = `
           <div class="quest-info">
             <div class="quest-title">${typeBadge} ${q.text}</div>
-            <div class="difficulty-tag">난이도: ${diffText}${targetDateText}</div>
+            <div class="difficulty-tag">난이도: ${diffText}</div>
           </div>
           <div class="quest-actions">
             <button class="clear-btn" id="btn-clear-${index}" ${q.completed || isBattleProcessing ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
@@ -956,11 +958,62 @@
       document.getElementById('inputPageModal').style.display = 'none';
     });
 
+    /* ⏰ 스케줄러: 밤 11시(23:00) 알림 & 밤 11시 50분(23:50) 자동 실패 처리 */
+    let lastNotified11PMDate = localStorage.getItem('quest_last_notified_11pm') || '';
+    let lastAutoFailedDate = localStorage.getItem('quest_last_autofailed') || '';
+
+    function startScheduleWatcher() {
+      setInterval(() => {
+        const now = new Date();
+        const todayKST = getKSTDateString();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        // 1. 매일 밤 11시 (23:00) 남은 퀘스트 알림
+        if (hours === 23 && minutes >= 0 && minutes < 50 && lastNotified11PMDate !== todayKST) {
+          const uncompleted = quests.filter(q => !q.completed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
+          if (uncompleted.length > 0) {
+            sendNotification('⏰ 미완료 퀘스트 알림!', `오늘 완료하지 않은 퀘스트가 ${uncompleted.length}개 남아있습니다! 밤 11시 50분 전에 클리어하세요.`);
+          }
+          lastNotified11PMDate = todayKST;
+          localStorage.setItem('quest_last_notified_11pm', todayKST);
+        }
+
+        // 2. 매일 밤 11시 50분 (23:50) 미완료 퀘스트 자동 실패 처리 및 알림
+        if (hours === 23 && minutes >= 50 && lastAutoFailedDate !== todayKST) {
+          let failedCount = 0;
+          let totalPenalty = 0;
+
+          // 오늘 수행해야 할 미완료 퀘스트 자동 실패 처리
+          quests = quests.filter(q => {
+            const isTodayQuest = q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST);
+            if (isTodayQuest && !q.completed) {
+              failedCount++;
+              totalPenalty += q.exp;
+              return false; // 미완료 퀘스트 삭제
+            }
+            return true;
+          });
+
+          if (failedCount > 0) {
+            loseExp(totalPenalty);
+            sendNotification('💥 11시 50분 퀘스트 자동 실패!', `오늘 미완료된 퀘스트 ${failedCount}개가 실패 처리되었습니다. (-${totalPenalty} EXP 감가)`);
+          }
+
+          lastAutoFailedDate = todayKST;
+          localStorage.setItem('quest_last_autofailed', todayKST);
+          saveData();
+          renderQuests();
+        }
+      }, 10000); // 10초마다 체크
+    }
+
     updateTodayDateDisplay();
     updateNotificationBtnStatus();
     checkDailyReset();
     updateProfile();
     renderQuests();
+    startScheduleWatcher();
   </script>
 </body>
 </html>

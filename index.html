@@ -93,14 +93,13 @@
     }
     .notification-btn:active { transform: scale(0.95); }
 
-    /* Canvas 게임 스테이지 */
     .battle-stage-canvas-wrapper {
       background: #000;
       border-radius: 14px;
       border: 1px solid var(--border-color);
       position: relative;
       width: 100%;
-      height: 160px;
+      height: 175px;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -368,7 +367,7 @@
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
     /* ==========================================
-       CANVAS 2D RPG ENGINE (패럴랙스 & 전투 연출)
+       CANVAS HIGH-QUALITY 2D RPG ENGINE
        ========================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -381,38 +380,40 @@
     window.addEventListener('resize', resizeCanvas);
 
     function getThemeByLevel(lvl) {
-      if (lvl >= 50) return { sky: '#11052C', mountain: '#3D087B', ground: '#F43B86', grass: '#FFE459' };
-      if (lvl >= 30) return { sky: '#1A0000', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C' };
-      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#3A506B', grass: '#5BC0BE' };
-      return { sky: '#1b2a47', mountain: '#2d4059', ground: '#2b3a42', grass: '#2ecc71' };
+      if (lvl >= 50) return { sky: '#0b001a', mountain: '#2A085C', ground: '#4A0E4E', grass: '#00F0FF', stars: true };
+      if (lvl >= 30) return { sky: '#1a0505', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C', stars: false };
+      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#2C3E50', grass: '#1ABC9C', stars: true };
+      return { sky: '#111e38', mountain: '#22334d', ground: '#1f2d3d', grass: '#2ecc71', stars: true };
     }
 
     let bgScrollX = 0;
     let isScrolling = true;
 
-    // 히어로 상태 관리
+    // 히어로
     const hero = {
-      x: 50,
+      x: 40,
       y: 0,
-      width: 28,
-      height: 36,
+      width: 32,
+      height: 42,
       walkFrame: 0,
       animTimer: 0,
-      state: 'WALK', // 'WALK', 'DEAD'
+      state: 'WALK',
       visible: true,
       blinkTimer: 0,
       rotation: 0
     };
 
-    // 몬스터 상태 관리
+    // 몬스터 (3개 클래스: SLIME, GOBLIN, DRAGON)
     const monster = {
       x: 9999,
       y: 0,
-      width: 32,
-      height: 38,
+      width: 40,
+      height: 40,
+      type: 'SLIME', // 'SLIME', 'GOBLIN', 'DRAGON'
       visible: false,
       blinkTimer: 0,
-      attackTimer: 0
+      attackTimer: 0,
+      animFrame: 0
     };
 
     let laserBeam = null;
@@ -420,17 +421,25 @@
     let particles = [];
     let damageNumbers = [];
 
-    function spawnParticles(x, y, color, count = 25) {
+    // 별 배경 데이터
+    const bgStars = Array.from({ length: 30 }, () => ({
+      x: Math.random() * 400,
+      y: Math.random() * 80,
+      size: Math.random() * 2 + 1,
+      alpha: Math.random()
+    }));
+
+    function spawnParticles(x, y, color, count = 25, isSpark = false) {
       for (let i = 0; i < count; i++) {
         particles.push({
           x: x,
           y: y,
-          vx: (Math.random() - 0.5) * 6,
-          vy: (Math.random() - 0.5) * 6,
-          size: Math.random() * 4 + 2,
+          vx: (Math.random() - 0.5) * (isSpark ? 10 : 6),
+          vy: (Math.random() - 0.5) * (isSpark ? 10 : 6),
+          size: Math.random() * (isSpark ? 3 : 4) + 2,
           color: color,
           alpha: 1,
-          life: 0.04
+          life: isSpark ? 0.08 : 0.04
         });
       }
     }
@@ -442,7 +451,7 @@
         text: text,
         color: color,
         alpha: 1,
-        scale: 1.5
+        scale: 1.6
       });
     }
 
@@ -459,36 +468,37 @@
 
     function updateGame(dt) {
       if (isScrolling) {
-        bgScrollX += 60 * dt;
+        bgScrollX += 65 * dt;
       }
 
       hero.animTimer += dt;
-      if (hero.animTimer > 0.15) {
+      if (hero.animTimer > 0.12) {
         hero.walkFrame = (hero.walkFrame + 1) % 4;
+        monster.animFrame = (monster.animFrame + 1) % 4;
         hero.animTimer = 0;
       }
 
       const groundY = canvas.height - 35;
-      const bounceY = (isScrolling && hero.state === 'WALK') ? Math.sin(bgScrollX * 0.15) * 3 : 0;
+      const bounceY = (isScrolling && hero.state === 'WALK') ? Math.sin(bgScrollX * 0.18) * 3.5 : 0;
       
       if (hero.state === 'WALK') {
         hero.y = groundY - hero.height + bounceY;
         hero.rotation = 0;
       } else if (hero.state === 'DEAD') {
-        hero.y = groundY - 14; // 바닥으로 쓰러짐
+        hero.y = groundY - 12;
         hero.rotation = 90 * (Math.PI / 180);
       }
 
       if (monster.visible) {
-        monster.x = canvas.width - 70;
+        monster.x = canvas.width - (monster.type === 'DRAGON' ? 90 : 70);
         monster.y = groundY - monster.height;
 
         monster.attackTimer += dt;
-        if (monster.attackTimer > 2.0 && isScrolling) {
+        if (monster.attackTimer > 1.8 && isScrolling) {
           fireBall = {
             x: monster.x,
-            y: monster.y + 10,
-            vx: -180,
+            y: monster.y + 15,
+            vx: -200,
             size: 6,
             isSmall: true
           };
@@ -496,10 +506,15 @@
         }
       }
 
-      if (fireBall && fireBall.isSmall) {
+      if (fireBall) {
         fireBall.x += fireBall.vx * dt;
-        if (fireBall.x < hero.x + hero.width) {
-          spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 8);
+        // 화염구 연기 파티클
+        if (Math.random() < 0.6) {
+          spawnParticles(fireBall.x, fireBall.y, '#e67e22', 1);
+        }
+
+        if (fireBall.isSmall && fireBall.x < hero.x + hero.width) {
+          spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 10);
           fireBall = null;
         }
       }
@@ -512,9 +527,9 @@
       });
 
       damageNumbers.forEach((d, idx) => {
-        d.y -= 20 * dt;
+        d.y -= 25 * dt;
         d.alpha -= 0.8 * dt;
-        if (d.scale > 1) d.scale -= 1 * dt;
+        if (d.scale > 1) d.scale -= 1.2 * dt;
         if (d.alpha <= 0) damageNumbers.splice(idx, 1);
       });
 
@@ -522,6 +537,7 @@
       if (monster.blinkTimer > 0) monster.blinkTimer -= dt;
     }
 
+    /* 🎨 고퀄리티 CANVAS 드로잉 메서드들 */
     function drawGame() {
       if (!canvas.width || !canvas.height) return;
       const theme = getThemeByLevel(level);
@@ -529,91 +545,83 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // 1. 하늘 배경
       ctx.fillStyle = theme.sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // 별 그리기
+      if (theme.stars) {
+        ctx.fillStyle = '#ffffff';
+        bgStars.forEach(s => {
+          ctx.globalAlpha = Math.abs(Math.sin(performance.now() * 0.002 + s.x));
+          ctx.fillRect(s.x % canvas.width, s.y, s.size, s.size);
+        });
+        ctx.globalAlpha = 1.0;
+      }
+
+      // 2. 패럴랙스 중경 산 & 성 실루엣
       ctx.fillStyle = theme.mountain;
       for (let i = -1; i < 3; i++) {
-        const mx = (i * 180) - ((bgScrollX * 0.3) % 180);
+        const mx = (i * 200) - ((bgScrollX * 0.25) % 200);
         ctx.beginPath();
         ctx.moveTo(mx, groundY);
-        ctx.lineTo(mx + 90, groundY - 60);
-        ctx.lineTo(mx + 180, groundY);
+        ctx.lineTo(mx + 70, groundY - 70);
+        ctx.lineTo(mx + 120, groundY - 40);
+        ctx.lineTo(mx + 200, groundY);
         ctx.fill();
       }
 
+      // 3. 근경 바닥
       ctx.fillStyle = theme.ground;
       ctx.fillRect(0, groundY, canvas.width, 35);
 
+      // 잔디/타일 상단 드로잉
       ctx.fillStyle = theme.grass;
       ctx.fillRect(0, groundY, canvas.width, 4);
-      for (let i = -1; i < canvas.width / 20 + 1; i++) {
-        const gx = (i * 20) - ((bgScrollX) % 20);
-        ctx.fillRect(gx, groundY - 3, 10, 3);
+      for (let i = -1; i < canvas.width / 16 + 1; i++) {
+        const gx = (i * 16) - ((bgScrollX) % 16);
+        ctx.fillRect(gx, groundY - 3, 8, 3);
       }
 
-      // 히어로 렌더링 (사망/피격 애니메이션 수정)
+      // 4. 히어로 (디테일 픽셀 마법사)
       if (hero.visible && !(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
-        ctx.save();
-        ctx.translate(hero.x + hero.width / 2, hero.y + hero.height / 2);
-        if (hero.rotation !== 0) ctx.rotate(hero.rotation);
-        ctx.translate(-(hero.x + hero.width / 2), -(hero.y + hero.height / 2));
-
-        ctx.fillStyle = '#f39c12';
-        ctx.fillRect(hero.x, hero.y + 10, hero.width, 18);
-        
-        ctx.fillStyle = '#ffcc99';
-        ctx.fillRect(hero.x + 4, hero.y, 20, 12);
-
-        ctx.fillStyle = '#e74c3c';
-        ctx.fillRect(hero.x - 4, hero.y + 10, 6, 20);
-
-        ctx.fillStyle = '#2c3e50';
-        if (hero.state === 'WALK') {
-          if (hero.walkFrame % 2 === 0) {
-            ctx.fillRect(hero.x + 4, hero.y + 28, 6, 8);
-            ctx.fillRect(hero.x + 18, hero.y + 26, 6, 6);
-          } else {
-            ctx.fillRect(hero.x + 4, hero.y + 26, 6, 6);
-            ctx.fillRect(hero.x + 18, hero.y + 28, 6, 8);
-          }
-        }
-        ctx.restore();
+        drawDetailedHero(hero.x, hero.y, hero.rotation, hero.walkFrame);
       }
 
+      // 5. 난이도별 디테일 몬스터
       if (monster.visible && !(monster.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
-        ctx.save();
-        ctx.fillStyle = '#8e44ad';
-        ctx.beginPath();
-        ctx.arc(monster.x + 16, monster.y + 18, 16, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#e74c3c';
-        ctx.fillRect(monster.x + 6, monster.y + 10, 6, 6);
-        ctx.fillRect(monster.x + 20, monster.y + 10, 6, 6);
-        ctx.restore();
+        drawDetailedMonster(monster.x, monster.y, monster.type, monster.animFrame);
       }
 
+      // 6. 네온 글로우 레이저 빔
       if (laserBeam) {
         ctx.save();
-        ctx.fillStyle = '#00ffff';
-        ctx.shadowColor = '#00ffff';
-        ctx.shadowBlur = 15;
+        // 외곽 광채
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+        ctx.fillRect(laserBeam.x, laserBeam.y - 6, laserBeam.width, laserBeam.height + 12);
+        // 코어 빔
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(laserBeam.x, laserBeam.y, laserBeam.width, laserBeam.height);
         ctx.restore();
       }
 
+      // 7. 이중 화염구 (Fireball)
       if (fireBall) {
         ctx.save();
-        ctx.fillStyle = '#ff3300';
-        ctx.shadowColor = '#ff6600';
-        ctx.shadowBlur = 10;
+        // 외곽 화염
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(fireBall.x, fireBall.y, fireBall.size + 4, 0, Math.PI * 2);
+        ctx.fill();
+        // 내부 코어
+        ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
         ctx.arc(fireBall.x, fireBall.y, fireBall.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
 
+      // 8. 파티클
       particles.forEach(p => {
         ctx.save();
         ctx.globalAlpha = p.alpha;
@@ -622,32 +630,142 @@
         ctx.restore();
       });
 
+      // 9. 데미지 텍스트
       damageNumbers.forEach(d => {
         ctx.save();
         ctx.globalAlpha = d.alpha;
-        ctx.font = '700 14px "Press Start 2P", sans-serif';
+        ctx.font = '700 15px "Press Start 2P", sans-serif';
         ctx.fillStyle = d.color;
         ctx.shadowColor = '#000';
-        ctx.shadowBlur = 4;
+        ctx.shadowBlur = 6;
         ctx.fillText(d.text, d.x, d.y);
         ctx.restore();
       });
+    }
+
+    /* 🧙‍♂️ 디테일 히어로 드로잉 함수 */
+    function drawDetailedHero(x, y, rotation, frame) {
+      ctx.save();
+      ctx.translate(x + 16, y + 21);
+      if (rotation !== 0) ctx.rotate(rotation);
+      ctx.translate(-(x + 16), -(y + 21));
+
+      // 뾰족 마법사 모자
+      ctx.fillStyle = '#34495e';
+      ctx.beginPath();
+      ctx.moveTo(x + 4, y + 10);
+      ctx.lineTo(x + 16, y - 6);
+      ctx.lineTo(x + 28, y + 10);
+      ctx.fill();
+      ctx.fillStyle = '#f39c12'; // 모자 띠
+      ctx.fillRect(x + 6, y + 8, 20, 3);
+
+      // 얼굴 & 눈
+      ctx.fillStyle = '#ffcc99';
+      ctx.fillRect(x + 8, y + 11, 16, 10);
+      ctx.fillStyle = '#2c3e50'; // 눈동자
+      ctx.fillRect(x + 18, y + 14, 3, 4);
+
+      // 의상 & 망토
+      ctx.fillStyle = '#e74c3c'; // 붉은 망토
+      ctx.fillRect(x + 2, y + 20, 8, 16);
+      ctx.fillStyle = '#2980b9'; // 로브
+      ctx.fillRect(x + 8, y + 21, 16, 14);
+
+      // 지팡이
+      ctx.fillStyle = '#7f8c8d';
+      ctx.fillRect(x + 24, y + 12, 3, 24);
+      ctx.fillStyle = '#00f0ff'; // 마법 보석
+      ctx.fillRect(x + 23, y + 8, 5, 5);
+
+      // 다리 걷기 애니메이션
+      ctx.fillStyle = '#111';
+      if (hero.state === 'WALK') {
+        if (frame % 2 === 0) {
+          ctx.fillRect(x + 9, y + 35, 5, 7);
+          ctx.fillRect(x + 18, y + 33, 5, 5);
+        } else {
+          ctx.fillRect(x + 9, y + 33, 5, 5);
+          ctx.fillRect(x + 18, y + 35, 5, 7);
+        }
+      }
+      ctx.restore();
+    }
+
+    /* 👾 난이도별 디테일 몬스터 드로잉 함수 */
+    function drawDetailedMonster(x, y, type, frame) {
+      ctx.save();
+      if (type === 'SLIME') {
+        // 🟢 쉬움: 말랑말랑 슬라임
+        const squish = Math.sin(frame * 1.5) * 3;
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.ellipse(x + 18, y + 22 + squish / 2, 16, 14 - squish / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // 눈 & 하이라이트
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x + 10, y + 16, 5, 5);
+        ctx.fillRect(x + 20, y + 16, 5, 5);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x + 12, y + 18, 2, 2);
+        ctx.fillRect(x + 22, y + 18, 2, 2);
+
+      } else if (type === 'GOBLIN') {
+        // 🟡 보통: 임프/고블린
+        ctx.fillStyle = '#e67e22'; // 몸체
+        ctx.fillRect(x + 8, y + 12, 20, 22);
+        // 뿔 & 귀
+        ctx.fillStyle = '#c0392b';
+        ctx.fillRect(x + 4, y + 4, 6, 8);
+        ctx.fillRect(x + 26, y + 4, 6, 8);
+        // 날카로운 눈
+        ctx.fillStyle = '#f1c40f';
+        ctx.fillRect(x + 10, y + 16, 5, 4);
+        ctx.fillRect(x + 21, y + 16, 5, 4);
+
+      } else if (type === 'DRAGON') {
+        // 🔴 어려움: 거대 보스 드래곤
+        ctx.fillStyle = '#c0392b';
+        ctx.fillRect(x + 10, y + 8, 38, 32);
+        // 날개 애니메이션
+        const wingY = Math.sin(frame * 2) * 4;
+        ctx.fillStyle = '#8e44ad';
+        ctx.beginPath();
+        ctx.moveTo(x + 25, y + 12);
+        ctx.lineTo(x + 5, y - 6 + wingY);
+        ctx.lineTo(x + 18, y + 22);
+        ctx.fill();
+        // 안광 & 이빨
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillRect(x + 16, y + 14, 7, 5);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x + 14, y + 28, 4, 6);
+        ctx.fillRect(x + 22, y + 28, 4, 6);
+      }
+      ctx.restore();
     }
 
     // 클리어 연출
     function triggerClearCanvasBattle(expGain, callback) {
       isScrolling = false;
       monster.visible = true;
-      monster.x = canvas.width - 70;
+
+      // 난이도별 몬스터 세팅
+      if (expGain === 10) monster.type = 'SLIME';
+      else if (expGain === 40) monster.type = 'DRAGON';
+      else monster.type = 'GOBLIN';
+
+      monster.x = canvas.width - (monster.type === 'DRAGON' ? 90 : 70);
 
       setTimeout(() => {
         laserBeam = {
           x: hero.x + hero.width,
           y: hero.y + 12,
           width: monster.x - (hero.x + hero.width),
-          height: 12
+          height: 10
         };
         play8BitHitSound();
+        spawnParticles(monster.x + 10, hero.y + 12, '#00f0ff', 15, true);
 
         setTimeout(() => {
           laserBeam = null;
@@ -655,7 +773,7 @@
           spawnDamageNumber(monster.x - 10, monster.y - 10, `-${expGain * 100}`, '#00ffff');
 
           setTimeout(() => {
-            spawnParticles(monster.x + 16, monster.y + 18, '#9b59b6', 40);
+            spawnParticles(monster.x + 16, monster.y + 18, monster.type === 'DRAGON' ? '#e74c3c' : '#2ecc71', 45);
             monster.visible = false;
             isScrolling = true;
             if (callback) callback();
@@ -664,18 +782,19 @@
       }, 500);
     }
 
-    // 실패 연출 (버그 수정: 내 캐릭터 피격/사망/부활)
+    // 실패 연출
     function triggerFailCanvasBattle(expLoss, callback) {
       isScrolling = false;
       monster.visible = true;
-      monster.x = canvas.width - 70;
+      monster.type = 'DRAGON'; // 실패 시 강력한 드래곤 등장
+      monster.x = canvas.width - 90;
 
       setTimeout(() => {
         fireBall = {
           x: monster.x,
           y: monster.y + 15,
-          vx: -350,
-          size: 14,
+          vx: -380,
+          size: 10,
           isSmall: false
         };
 
@@ -685,17 +804,14 @@
             fireBall = null;
             play8BitFailSound();
             
-            // 피격 및 데미지
             hero.blinkTimer = 0.6;
             spawnDamageNumber(hero.x - 5, hero.y - 10, `-${expLoss} EXP`, '#ff0055');
-            spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 30);
+            spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 35);
 
             setTimeout(() => {
-              // 붉게 깜빡인 후 쓰러짐 (DEAD)
               hero.state = 'DEAD';
               
               setTimeout(() => {
-                // 부활 준비 (사라졌다가 다시 짠)
                 hero.visible = false;
                 spawnParticles(hero.x + 14, hero.y + 18, '#ffcc99', 20);
 
@@ -853,7 +969,7 @@
         quests.forEach(q => {
           if (q.type === 'daily') {
             if (!q.completed) totalPenalty += q.exp;
-            q.completed = false; // 매일 리셋 시 다시 수행 가능 상태로 만듦
+            q.completed = false;
           }
         });
 
@@ -997,7 +1113,6 @@
 
         gainExp(q.exp);
 
-        // 1회성 퀘스트만 완료 시 삭제 (일일 퀘스트는 남겨둠)
         if (q.type === 'once') {
           quests.splice(index, 1);
         }
@@ -1024,7 +1139,6 @@
       updateProfile();
     }
 
-    // 버그 수정: 실패 시 일일 퀘스트는 삭제하지 않고 1회성 퀘스트만 삭제
     function failQuest(index) {
       if (isBattleProcessing) return;
       const q = quests[index];
@@ -1038,7 +1152,6 @@
       triggerFailCanvasBattle(penaltyExp, () => {
         sendNotification('💥 퀘스트 실패!', `'${q.text}' 퀘스트에 실패했습니다. (-${penaltyExp} EXP 감가)`);
 
-        // 1회성 퀘스트만 실패 시 삭제
         if (q.type === 'once') {
           quests.splice(index, 1);
         }
@@ -1131,7 +1244,6 @@
     let lastNotified11PMDate = localStorage.getItem('quest_last_notified_11pm') || '';
     let lastAutoFailedDate = localStorage.getItem('quest_last_autofailed') || '';
 
-    // 버그 수정: 밤 11:50분 자동 실패 시에도 일일 퀘스트는 삭제되지 않음
     function checkNightSchedules() {
       const now = new Date();
       const todayKST = getKSTDateString();
@@ -1157,7 +1269,6 @@
           if (isTodayQuest && !q.completed) {
             failedCount++;
             totalPenalty += q.exp;
-            // 1회성 퀘스트만 자동 실패 시 삭제
             return q.type === 'daily'; 
           }
           return true;

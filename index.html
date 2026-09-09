@@ -10,10 +10,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<!-- 모바일 홈 화면 앱 아이콘 지정 -->
-<link rel="icon" type="image/png" sizes="192x192" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="apple-touch-icon-precomposed" href="icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon-precomposed" href="icon.png">
 
   <link rel="manifest" href="manifest.json">
 
@@ -64,7 +63,6 @@
       overflow: hidden;
     }
 
-    /* 상단 유틸리티 바 (오늘 날짜 & 알림 버튼) */
     .top-header-bar {
       display: flex;
       justify-content: space-between;
@@ -272,6 +270,25 @@
     .modal-box p { font-size: 12px; line-height: 1.5; color: #fff; }
     .modal-box button { margin-top: 14px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
 
+    /* 랜덤 박스 스타일 */
+    .random-box-container {
+      font-size: 50px;
+      margin: 15px 0;
+      cursor: pointer;
+      animation: bounce 0.6s infinite alternate;
+      user-select: none;
+    }
+    @keyframes bounce {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-10px) scale(1.1); }
+    }
+    .bonus-result-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2ecc71;
+      margin-top: 10px;
+    }
+
     .reset-game-btn {
       background: #c62828 !important; color: white !important; margin-top: 8px !important; font-size: 11px !important; opacity: 0.9;
     }
@@ -288,10 +305,9 @@
 <body>
 
   <div class="game-container">
-    <!-- 상단 유틸리티 바: 오늘 날짜 및 알림 허용 버튼 -->
     <div class="top-header-bar">
       <div class="today-date-text" id="todayDateView">📅 날짜 로딩 중...</div>
-      <button class="notification-btn" id="notifToggleBtn" onclick="requestNotificationPermission()">🔔 알림 켜기</button>
+      <button class="notification-btn" id="notifToggleBtn" onclick="toggleNotificationPermission()">🔔 알림 켜기</button>
     </div>
 
     <div class="battle-stage" id="battleStage">
@@ -362,11 +378,16 @@
     </div>
   </div>
 
+  <!-- 레벨 업 & 랜덤박스 모달 -->
   <div class="level-up-modal" id="levelUpModal">
     <div class="modal-box">
       <h2>LEVEL UP!</h2>
       <p id="levelUpMsg">레벨이 상승했습니다! 🎉</p>
-      <button id="closeModal">성장 완료!</button>
+      
+      <div class="random-box-container" id="randomBox" onclick="openRandomBox()">🎁</div>
+      <div class="bonus-result-text" id="bonusResultText">상자를 터치하여 보너스 EXP를 획득하세요!</div>
+
+      <button id="closeModal" style="display: none;">성장 완료!</button>
     </div>
   </div>
 
@@ -393,11 +414,12 @@
     let currentExp = parseInt(localStorage.getItem('quest_exp')) || 0;
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
     let chosenAvatar = localStorage.getItem('quest_chosen_avatar') || '🧙‍♂️';
+    let isNotificationEnabled = localStorage.getItem('quest_notif_enabled') === 'true';
 
     let selectedType = 'daily';
     let selectedDiff = 20;
-
     let isBattleProcessing = false;
+    let isRandomBoxOpened = false;
 
     const availableAvatars = ['🧙‍♂️', '🥷', '🤴', '👸', '🧛‍♂️', '🧝‍♀️', '🦁', '🐯', '🦊', '🐻', '🦄', '🐉'];
     const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
@@ -410,19 +432,30 @@
       document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
     }
 
-    function requestNotificationPermission() {
+    /* 알림 토글 기능 (켜기 / 끄기) */
+    function toggleNotificationPermission() {
       if (!('Notification' in window)) {
         alert('이 브라우저는 모바일 알림을 지원하지 않습니다.');
         return;
       }
-      Notification.requestPermission().then(permission => {
+
+      if (!isNotificationEnabled) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            isNotificationEnabled = true;
+            localStorage.setItem('quest_notif_enabled', 'true');
+            updateNotificationBtnStatus();
+            sendNotification('🔔 알림 켜짐', 'Life Quest 레벨 업 및 시간별 알림이 활성화되었습니다.');
+          } else {
+            alert('스마트폰 브라우저 설정에서 알림 권한을 허용해 주세요.');
+          }
+        });
+      } else {
+        isNotificationEnabled = false;
+        localStorage.setItem('quest_notif_enabled', 'false');
         updateNotificationBtnStatus();
-        if (permission === 'granted') {
-          sendNotification('🔔 알림 설정 완료!', 'Life Quest 레벨 업 및 시간별 알림이 켜졌습니다.');
-        } else if (permission === 'denied') {
-          alert('알림 권한이 거부되어 있습니다. 스마트폰 설정에서 알림을 허용해 주세요.');
-        }
-      });
+        alert('알림 기능이 끄기 상태로 변경되었습니다.');
+      }
     }
 
     function updateNotificationBtnStatus() {
@@ -431,24 +464,25 @@
         btn.style.display = 'none';
         return;
       }
-      if (Notification.permission === 'granted') {
+      if (isNotificationEnabled && Notification.permission === 'granted') {
         btn.textContent = '🔔 알림 켜짐';
         btn.style.background = '#2ecc71';
         btn.style.color = '#fff';
       } else {
-        btn.textContent = '🔔 알림 켜기';
+        btn.textContent = '🔕 알림 끔';
         btn.style.background = '#3a3f51';
+        btn.style.color = '#ccc';
       }
     }
 
     function sendNotification(title, body) {
-      if ('Notification' in window && Notification.permission === 'granted') {
+      if (isNotificationEnabled && 'Notification' in window && Notification.permission === 'granted') {
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
           navigator.serviceWorker.ready.then(reg => {
             reg.showNotification(title, {
               body: body,
-              icon: 'https://via.placeholder.com/192/f39c12/ffffff?text=QUEST',
-              badge: 'https://via.placeholder.com/192/f39c12/ffffff?text=QUEST',
+              icon: 'icon.png',
+              badge: 'icon.png',
               vibrate: [100, 50, 100]
             });
           });
@@ -473,14 +507,11 @@
       initAudio();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(150, audioCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-      
       gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
@@ -508,15 +539,12 @@
       initAudio();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      
       osc.type = 'square';
       osc.frequency.setValueAtTime(300, audioCtx.currentTime);
       osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
       osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.25);
-      
       gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-      
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
@@ -565,16 +593,23 @@
       localStorage.setItem('quest_list_v2', JSON.stringify(quests));
     }
 
+    /* 1~77 레벨 세분화 칭호 시스템 */
     function getLevelBadge(lvl) {
-      if (lvl >= 15) return "💎 전설";
-      if (lvl >= 10) return "🥇 대마법사";
-      if (lvl >= 5) return "🥈 기사";
-      return "🥉 초보";
+      if (lvl >= 77) return "👑 신화적 존재";
+      if (lvl >= 70) return "🔥 초월자";
+      if (lvl >= 60) return "⚡ 정점의 영웅";
+      if (lvl >= 50) return "🌟 영웅";
+      if (lvl >= 40) return "💎 대마법사";
+      if (lvl >= 30) return "⚔️ 상급 기사";
+      if (lvl >= 20) return "🥇 정예 기사";
+      if (lvl >= 10) return "🥈 수련 기사";
+      if (lvl >= 5)  return "🥉 견습 모험가";
+      return "🌱 초보 모험가";
     }
 
     function updateProfile() {
       const maxExp = getMaxExp();
-      document.getElementById('heroLevel').textContent = `LV. ${level} 용사`;
+      document.getElementById('heroLevel').textContent = `LV. ${level} (Max 77)`;
       document.getElementById('heroAvatar').textContent = chosenAvatar;
       document.getElementById('heroBadge').textContent = getLevelBadge(level);
       
@@ -658,14 +693,12 @@
       if (exp === 40) document.getElementById('diff40Btn').classList.add('active-diff');
     }
 
-    /* 오늘 날짜에 지정된 1회성 퀘스트 및 일일 퀘스트만 필터링하여 렌더링 */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
 
       const todayKST = getKSTDateString();
 
-      // 오늘 날짜 필터링 (일일 퀘스트 OR 오늘이 목표인 1회성 퀘스트)
       const visibleQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
         .filter(q => q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST));
 
@@ -915,22 +948,52 @@
 
     function gainExp(amount) {
       currentExp += amount;
-      const maxExp = getMaxExp();
+      let maxExp = getMaxExp();
       
       if (currentExp >= maxExp) {
-        currentExp -= maxExp;
-        level++;
-        showLevelUpModal();
+        if (level < 77) {
+          currentExp -= maxExp;
+          level++;
+          showLevelUpModal();
+        } else {
+          level = 77;
+          currentExp = getMaxExp(77);
+        }
       }
       saveData();
       updateProfile();
     }
 
+    /* 레벨 업 & 랜덤박스 보너스 모달 로직 */
     function showLevelUpModal() {
-      sendNotification('🎉 LEVEL UP!', `축하합니다! LV. ${level} 용사로 성장했습니다!`);
+      sendNotification('🎉 LEVEL UP!', `축하합니다! LV. ${level} (${getLevelBadge(level)})로 승급했습니다!`);
       
-      document.getElementById('levelUpMsg').textContent = `축하합니다! LV. ${level} 용사로 성장했습니다!\n다음 레벨 필요 경험치: ${getMaxExp()} EXP`;
+      isRandomBoxOpened = false;
+      document.getElementById('randomBox').style.display = 'block';
+      document.getElementById('randomBox').textContent = '🎁';
+      document.getElementById('bonusResultText').textContent = '상자를 터치하여 50~200 보너스 EXP를 획득하세요!';
+      document.getElementById('closeModal').style.display = 'none';
+
+      document.getElementById('levelUpMsg').textContent = `축하합니다! LV. ${level} 승급 완료!\n[${getLevelBadge(level)}] 칭호를 획득했습니다.`;
       document.getElementById('levelUpModal').style.display = 'flex';
+    }
+
+    function openRandomBox() {
+      if (isRandomBoxOpened) return;
+      isRandomBoxOpened = true;
+
+      play8BitVictorySound();
+      
+      // 50 ~ 200 랜덤 보너스 경험치
+      const bonusExp = Math.floor(Math.random() * 151) + 50;
+      
+      document.getElementById('randomBox').textContent = '💎';
+      document.getElementById('bonusResultText').textContent = `🎉 축하합니다! +${bonusExp} 보너스 EXP 획득!`;
+      document.getElementById('closeModal').style.display = 'block';
+
+      currentExp += bonusExp;
+      saveData();
+      updateProfile();
     }
 
     document.getElementById('closeModal').addEventListener('click', () => {
@@ -958,54 +1021,58 @@
       document.getElementById('inputPageModal').style.display = 'none';
     });
 
-    /* ⏰ 스케줄러: 밤 11시(23:00) 알림 & 밤 11시 50분(23:50) 자동 실패 처리 */
+    /* 스케줄러: 밤 11시(23:00) 미완료 알림 & 밤 11시 50분(23:50) 미완료 자동 실패 */
     let lastNotified11PMDate = localStorage.getItem('quest_last_notified_11pm') || '';
     let lastAutoFailedDate = localStorage.getItem('quest_last_autofailed') || '';
 
+    function checkNightSchedules() {
+      const now = new Date();
+      const todayKST = getKSTDateString();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // 오늘 수행할 미완료 퀘스트 감지
+      const uncompletedQuests = quests.filter(q => !q.completed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
+
+      // 1. 매일 밤 11시 (23:00) 미완료 퀘스트 알림
+      if (hours === 23 && minutes >= 0 && minutes < 50 && lastNotified11PMDate !== todayKST) {
+        if (uncompletedQuests.length > 0) {
+          sendNotification('⏰ [LifeQuest] 미완료 퀘스트 알림!', `오늘 완료하지 않은 퀘스트가 ${uncompletedQuests.length}개 남아있습니다! 11시 50분 전에 클리어하세요.`);
+        }
+        lastNotified11PMDate = todayKST;
+        localStorage.setItem('quest_last_notified_11pm', todayKST);
+      }
+
+      // 2. 매일 밤 11시 50분 (23:50) 미완료 퀘스트 자동 실패 처리
+      if (hours === 23 && minutes >= 50 && lastAutoFailedDate !== todayKST) {
+        let failedCount = 0;
+        let totalPenalty = 0;
+
+        quests = quests.filter(q => {
+          const isTodayQuest = q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST);
+          if (isTodayQuest && !q.completed) {
+            failedCount++;
+            totalPenalty += q.exp;
+            return false;
+          }
+          return true;
+        });
+
+        if (failedCount > 0) {
+          loseExp(totalPenalty);
+          sendNotification('💥 [LifeQuest] 11시 50분 자동 실패!', `오늘 미완료 퀘스트 ${failedCount}개가 실패 처리되었습니다. (-${totalPenalty} EXP 감가)`);
+        }
+
+        lastAutoFailedDate = todayKST;
+        localStorage.setItem('quest_last_autofailed', todayKST);
+        saveData();
+        renderQuests();
+      }
+    }
+
     function startScheduleWatcher() {
-      setInterval(() => {
-        const now = new Date();
-        const todayKST = getKSTDateString();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-
-        // 1. 매일 밤 11시 (23:00) 남은 퀘스트 알림
-        if (hours === 23 && minutes >= 0 && minutes < 50 && lastNotified11PMDate !== todayKST) {
-          const uncompleted = quests.filter(q => !q.completed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
-          if (uncompleted.length > 0) {
-            sendNotification('⏰ 미완료 퀘스트 알림!', `오늘 완료하지 않은 퀘스트가 ${uncompleted.length}개 남아있습니다! 밤 11시 50분 전에 클리어하세요.`);
-          }
-          lastNotified11PMDate = todayKST;
-          localStorage.setItem('quest_last_notified_11pm', todayKST);
-        }
-
-        // 2. 매일 밤 11시 50분 (23:50) 미완료 퀘스트 자동 실패 처리 및 알림
-        if (hours === 23 && minutes >= 50 && lastAutoFailedDate !== todayKST) {
-          let failedCount = 0;
-          let totalPenalty = 0;
-
-          // 오늘 수행해야 할 미완료 퀘스트 자동 실패 처리
-          quests = quests.filter(q => {
-            const isTodayQuest = q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST);
-            if (isTodayQuest && !q.completed) {
-              failedCount++;
-              totalPenalty += q.exp;
-              return false; // 미완료 퀘스트 삭제
-            }
-            return true;
-          });
-
-          if (failedCount > 0) {
-            loseExp(totalPenalty);
-            sendNotification('💥 11시 50분 퀘스트 자동 실패!', `오늘 미완료된 퀘스트 ${failedCount}개가 실패 처리되었습니다. (-${totalPenalty} EXP 감가)`);
-          }
-
-          lastAutoFailedDate = todayKST;
-          localStorage.setItem('quest_last_autofailed', todayKST);
-          saveData();
-          renderQuests();
-        }
-      }, 10000); // 10초마다 체크
+      checkNightSchedules();
+      setInterval(checkNightSchedules, 10000); // 10초 주기 실시간 검사
     }
 
     updateTodayDateDisplay();

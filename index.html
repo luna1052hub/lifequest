@@ -93,86 +93,105 @@
     }
     .notification-btn:active { transform: scale(0.95); }
 
-    .battle-stage {
-      background: #21242d; 
-      border-radius: 14px; 
-      padding: 16px 14px 12px 14px;
-      border: 1px solid var(--border-color); 
-      position: relative; 
-      min-height: 125px; 
-      display: flex; 
-      align-items: center; 
-      overflow: hidden; 
+    /* Canvas 게임 스테이지 */
+    .battle-stage-canvas-wrapper {
+      background: #000;
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+      position: relative;
+      width: 100%;
+      height: 160px;
+      overflow: hidden;
       flex-shrink: 0;
     }
 
-    .hero-profile { display: flex; align-items: center; gap: 10px; width: 100%; }
-    .avatar-wrapper { position: relative; display: inline-block; cursor: pointer; }
-    .hero-avatar { font-size: 34px; background: #3a3f51; padding: 4px 6px; border-radius: 12px; transition: transform 0.2s; }
-    .avatar-wrapper:hover .hero-avatar { transform: scale(1.05); }
-    .hero-badge {
-      position: absolute; top: -6px; right: -8px; font-size: 9px; font-weight: 700; background: #1a1c23; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 1px 4px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    canvas#gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    .hero-info { flex: 1; }
-    .hero-level { font-family: 'Press Start 2P', cursive; font-size: 11px; color: var(--accent-color); margin-bottom: 4px; }
-    .exp-bar-bg { background: #1a1c23; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid #4a4e69; position: relative; }
-    .exp-bar-fill { background: linear-gradient(90deg, #f1c40f, #e67e22); height: 100%; width: 0%; transition: width 0.3s ease; }
-    .exp-text { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: 700; top: 0; line-height: 14px; color: #fff; text-shadow: 1px 1px 2px #000; }
+    .hero-profile-overlay {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .hero-info-box {
+      flex: 1;
+      background: rgba(33, 36, 45, 0.85);
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(2px);
+    }
+
+    .hero-badge-inline {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent-color);
+      margin-left: 4px;
+    }
+
+    .hero-level {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      color: var(--accent-color);
+      margin-bottom: 4px;
+    }
+
+    .exp-bar-bg {
+      background: #1a1c23;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #4a4e69;
+      position: relative;
+    }
+
+    .exp-bar-fill {
+      background: linear-gradient(90deg, #f1c40f, #e67e22);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .exp-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      font-size: 8px;
+      font-weight: 700;
+      top: 0;
+      line-height: 12px;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+    }
 
     .icon-add-btn {
-      background: var(--accent-color); color: white; border: none; width: 34px; height: 34px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: transform 0.1s; flex-shrink: 0;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      pointer-events: auto;
+      flex-shrink: 0;
     }
     .icon-add-btn:active { transform: scale(0.9); }
-
-    .battle-arena {
-      display: none; width: 100%; justify-content: space-between; align-items: center; padding: 0 15px; position: relative; height: 100%;
-    }
-    .fighter { font-size: 38px; transition: transform 0.15s ease-out, opacity 0.3s ease; position: relative; z-index: 2; }
-    .vs-text { 
-      font-family: 'Press Start 2P', cursive; font-size: 12px; color: #e74c3c; animation: pulse 0.4s infinite alternate; z-index: 2; transition: opacity 0.3s ease; opacity: 1; text-shadow: 2px 2px #000; text-align: center;
-    }
-    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
-
-    .hit-effect { position: absolute; font-size: 38px; opacity: 0; z-index: 10; pointer-events: none; }
-    .hit-effect-monster { right: 20px; }
-    .hit-effect-hero { left: 20px; }
-
-    .damage-text { position: absolute; font-family: 'Press Start 2P', cursive; font-size: 11px; text-shadow: 2px 2px #000; opacity: 0; z-index: 10; font-weight: 700; white-space: nowrap; }
-    .damage-text-monster { right: 5px; top: 2px; color: #ff0055; }
-    .damage-text-hero { left: 5px; top: 2px; color: #e74c3c; }
-
-    .stage-shake { animation: shake 0.3s ease-in-out; }
-    @keyframes shake {
-      0%, 100% { transform: translate(0, 0); }
-      20% { transform: translate(-8px, 4px); }
-      40% { transform: translate(8px, -4px); }
-      60% { transform: translate(-6px, -2px); }
-      80% { transform: translate(6px, 2px); }
-    }
-
-    .hero-dash { transform: translateX(80px) scale(1.3) rotate(15deg) !important; }
-    .monster-dash { transform: translateX(-80px) scale(1.3) rotate(-15deg) !important; }
-    .monster-hit { animation: flashRed 0.15s 2; }
-    
-    .hero-hit-die { animation: heroFlashAndFade 1.0s ease-out forwards; }
-    @keyframes heroFlashAndFade {
-      0% { opacity: 1; filter: none; transform: scale(1); }
-      20% { opacity: 0.3; filter: drop-shadow(0 0 15px #e74c3c) sepia(100%) hue-rotate(-50deg) saturate(600%); transform: scale(1.1) rotate(-10deg); }
-      40% { opacity: 1; filter: none; transform: scale(0.95); }
-      60% { opacity: 0.2; filter: drop-shadow(0 0 15px #e74c3c); transform: scale(1.05) rotate(10deg); }
-      100% { opacity: 0; transform: translateY(15px) scale(0); }
-    }
-
-    @keyframes flashRed { 0%, 100% { opacity: 1; filter: none; } 50% { opacity: 0.2; filter: drop-shadow(0 0 15px #e74c3c) sepia(100%) hue-rotate(-50deg) saturate(600%); } }
-
-    .hit-active { animation: popHit 0.4s ease-out forwards; }
-    @keyframes popHit { 0% { opacity: 0; transform: scale(0.3) rotate(-20deg); } 50% { opacity: 1; transform: scale(1.3) rotate(10deg); } 100% { opacity: 0; transform: scale(1); } }
-
-    .damage-active { animation: floatUp 0.6s ease-out forwards; }
-    @keyframes floatUp { 0% { opacity: 0; transform: translateY(5px); } 30% { opacity: 1; transform: translateY(-12px) scale(1.1); } 100% { opacity: 0; transform: translateY(-25px); } }
-
-    .monster-die { transform: translateY(30px) rotate(180deg) scale(0) !important; opacity: 0; transition: all 0.4s ease-in; }
 
     .quest-list-container { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .quest-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-right: 2px; }
@@ -182,10 +201,7 @@
       background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; flex-shrink: 0; gap: 8px;
       transition: opacity 0.3s, transform 0.3s;
     }
-    .quest-card.completed-card {
-      opacity: 0.6;
-      background: #1a1c23;
-    }
+    .quest-card.completed-card { opacity: 0.6; background: #1a1c23; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     .quest-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
@@ -196,28 +212,16 @@
     .difficulty-tag { font-size: 10px; color: #868e96; }
 
     .quest-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
-    .clear-btn {
-      background: var(--success-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
-    }
-    .fail-btn {
-      background: var(--danger-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
-    }
-    .remove-btn {
-      background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; margin-left: 2px;
-    }
-    .remove-btn:hover { color: #e74c3c; }
+    .clear-btn { background: var(--success-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .fail-btn { background: var(--danger-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .remove-btn { background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; margin-left: 2px; }
     .clear-btn:disabled, .fail-btn:disabled, .remove-btn:disabled { background: #4a4e69 !important; cursor: not-allowed; opacity: 0.5; }
 
     .input-page-modal {
       display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-      background: #f4e4bc;
-      background-image: radial-gradient(#e3cb98 1px, transparent 1px);
-      background-size: 16px 16px;
-      z-index: 50; padding: 20px 16px;
-      padding-top: max(20px, env(safe-area-inset-top));
-      padding-bottom: max(12px, env(safe-area-inset-bottom));
-      flex-direction: column; justify-content: space-between; 
-      animation: slideUp 0.3s ease-out; color: #3e2723; border: 6px solid #8d6e63; border-radius: 0;
+      background: #f4e4bc; background-image: radial-gradient(#e3cb98 1px, transparent 1px); background-size: 16px 16px;
+      z-index: 50; padding: 20px 16px; padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(12px, env(safe-area-inset-bottom));
+      flex-direction: column; justify-content: space-between; animation: slideUp 0.3s ease-out; color: #3e2723; border: 6px solid #8d6e63; border-radius: 0;
     }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -233,26 +237,11 @@
     .input-form-body { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; flex: 1; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 12px; color: #5d4037; font-weight: 700; }
-    .quest-input-full { 
-      width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700;
-    }
-
-    .date-picker-input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      border: 2px solid #a1887f;
-      background: #fff8e1;
-      color: #3e2723;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
+    .quest-input-full { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700; }
+    .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700; cursor: pointer; }
 
     .btn-toggle-box { display: flex; gap: 6px; }
-    .opt-btn {
-      flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s;
-    }
+    .opt-btn { flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s; }
     .opt-btn.active-type { background: #5c6bc0; color: white; border-color: #3f51b5; }
     .opt-btn-easy.active-diff { background: #4caf50; color: white; border-color: #2e7d32; }
     .opt-btn-medium.active-diff { background: #ffb300; color: #3e2723; border-color: #ff8f00; }
@@ -270,36 +259,14 @@
     .modal-box p { font-size: 12px; line-height: 1.5; color: #fff; }
     .modal-box button { margin-top: 14px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
 
-    /* 랜덤 박스 스타일 */
     .random-box-container {
-      font-size: 50px;
-      margin: 15px 0;
-      cursor: pointer;
-      animation: bounce 0.6s infinite alternate;
-      user-select: none;
+      font-size: 50px; margin: 15px 0; cursor: pointer; animation: bounce 0.6s infinite alternate; user-select: none;
     }
-    @keyframes bounce {
-      from { transform: translateY(0) scale(1); }
-      to { transform: translateY(-10px) scale(1.1); }
-    }
-    .bonus-result-text {
-      font-size: 14px;
-      font-weight: 700;
-      color: #2ecc71;
-      margin-top: 10px;
-    }
+    @keyframes bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.1); } }
+    .bonus-result-text { font-size: 14px; font-weight: 700; color: #2ecc71; margin-top: 10px; }
 
-    .reset-game-btn {
-      background: #c62828 !important; color: white !important; margin-top: 8px !important; font-size: 11px !important; opacity: 0.9;
-    }
+    .reset-game-btn { background: #c62828 !important; color: white !important; margin-top: 8px !important; font-size: 11px !important; opacity: 0.9; }
     .reset-game-btn:active { transform: scale(0.95); opacity: 1; }
-
-    .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
-    .avatar-item {
-      font-size: 28px; padding: 6px; background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
-    }
-    .avatar-item:active { transform: scale(0.9); }
-    .avatar-item.selected { border-color: var(--accent-color); background: #3a3f51; }
   </style>
 </head>
 <body>
@@ -310,28 +277,19 @@
       <button class="notification-btn" id="notifToggleBtn" onclick="toggleNotificationPermission()">🔔 알림 켜기</button>
     </div>
 
-    <div class="battle-stage" id="battleStage">
-      <div class="hero-profile" id="heroProfileView">
-        <div class="avatar-wrapper" onclick="openAvatarModal()">
-          <div class="hero-avatar" id="heroAvatar">🧙‍♂️</div>
-          <div class="hero-badge" id="heroBadge">🥉 초보</div>
-        </div>
-        <div class="hero-info">
-          <div class="hero-level" id="heroLevel">LV. 1 용사</div>
+    <!-- Canvas 스테이지 영역 -->
+    <div class="battle-stage-canvas-wrapper">
+      <canvas id="gameCanvas"></canvas>
+      
+      <div class="hero-profile-overlay">
+        <div class="hero-info-box">
+          <div class="hero-level" id="heroLevel">LV. 1 <span class="hero-badge-inline" id="heroBadge">🌱 초보</span></div>
           <div class="exp-bar-bg">
             <div class="exp-bar-fill" id="expFill"></div>
             <div class="exp-text" id="expText">0 / 100 EXP</div>
           </div>
         </div>
         <button class="icon-add-btn" id="openAddModalBtn">➕</button>
-      </div>
-
-      <div class="battle-arena" id="battleArenaView">
-        <div class="fighter" id="heroFighter">🧙‍♂️</div>
-        <div class="vs-text" id="vsText">VS</div>
-        <div class="fighter" id="monsterFighter">👾</div>
-        <div class="hit-effect hit-effect-monster" id="hitEffect">💥</div>
-        <div class="damage-text damage-text-monster" id="damageText">CRITICAL!</div>
       </div>
     </div>
 
@@ -378,42 +336,28 @@
     </div>
   </div>
 
-  <!-- 레벨 업 & 랜덤박스 모달 -->
   <div class="level-up-modal" id="levelUpModal">
     <div class="modal-box">
       <h2>LEVEL UP!</h2>
       <p id="levelUpMsg">레벨이 상승했습니다! 🎉</p>
       
       <div class="random-box-container" id="randomBox" onclick="openRandomBox()">🎁</div>
-      <div class="bonus-result-text" id="bonusResultText">상자를 터치하여 보너스 EXP를 획득하세요!</div>
+      <div class="bonus-result-text" id="bonusResultText">상자를 터치하여 50~200 보너스 EXP를 획득하세요!</div>
 
       <button id="closeModal" style="display: none;">성장 완료!</button>
-    </div>
-  </div>
-
-  <div class="avatar-select-modal" id="avatarSelectModal">
-    <div class="modal-box">
-      <h2>HERO SELECT</h2>
-      <p>대표 캐릭터를 선택하세요!</p>
-      <div class="avatar-grid" id="avatarGrid"></div>
-      <button onclick="closeAvatarModal()">선택 완료</button>
-      <button class="reset-game-btn" onclick="resetAllGameData()">⚠️ 게임 전체 리셋</button>
     </div>
   </div>
 
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/lifequest/sw.js').catch(err => {
-          console.log('SW Registration failed:', err);
-        });
+        navigator.serviceWorker.register('/lifequest/sw.js').catch(err => console.log(err));
       });
     }
 
     let level = parseInt(localStorage.getItem('quest_level')) || 1;
     let currentExp = parseInt(localStorage.getItem('quest_exp')) || 0;
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
-    let chosenAvatar = localStorage.getItem('quest_chosen_avatar') || '🧙‍♂️';
     let isNotificationEnabled = localStorage.getItem('quest_notif_enabled') === 'true';
 
     let selectedType = 'daily';
@@ -421,10 +365,355 @@
     let isBattleProcessing = false;
     let isRandomBoxOpened = false;
 
-    const availableAvatars = ['🧙‍♂️', '🥷', '🤴', '👸', '🧛‍♂️', '🧝‍♀️', '🦁', '🐯', '🦊', '🐻', '🦄', '🐉'];
-    const monsters = ['👾', '👹', '💀', '🗿', '🐉', '👻'];
     let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
+    /* ==========================================
+       CANVAS 2D RPG ENGINE (패럴랙스 & 전투 연출)
+       ========================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // 테마 설정 (레벨별 배경)
+    function getThemeByLevel(lvl) {
+      if (lvl >= 50) return { sky: '#11052C', mountain: '#3D087B', ground: '#F43B86', grass: '#FFE459' }; // 우주/마왕성
+      if (lvl >= 30) return { sky: '#1A0000', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C' }; // 용암/화산
+      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#3A506B', grass: '#5BC0BE' }; // 밤의 던전
+      return { sky: '#1b2a47', mountain: '#2d4059', ground: '#2b3a42', grass: '#2ecc71' }; // 푸른 평원
+    }
+
+    let bgScrollX = 0;
+    let isScrolling = true;
+
+    // 히어로 객체 (픽셀 렌더링)
+    const hero = {
+      x: 50,
+      y: 0,
+      width: 28,
+      height: 36,
+      walkFrame: 0,
+      animTimer: 0,
+      state: 'WALK', // 'WALK', 'ATTACK', 'HIT'
+      blinkTimer: 0
+    };
+
+    // 몬스터 객체
+    const monster = {
+      x: 9999,
+      y: 0,
+      width: 32,
+      height: 38,
+      visible: false,
+      state: 'IDLE', // 'IDLE', 'ATTACK', 'HIT'
+      blinkTimer: 0,
+      attackTimer: 0
+    };
+
+    // 이펙트 및 파티클 시스템
+    let laserBeam = null;
+    let fireBall = null;
+    let particles = [];
+    let damageNumbers = [];
+
+    // 파티클 생성
+    function spawnParticles(x, y, color, count = 25) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
+          size: Math.random() * 4 + 2,
+          color: color,
+          alpha: 1,
+          life: 0.04
+        });
+      }
+    }
+
+    // 데미지 텍스트 생성
+    function spawnDamageNumber(x, y, text, color) {
+      damageNumbers.push({
+        x: x,
+        y: y,
+        text: text,
+        color: color,
+        alpha: 1,
+        scale: 1.5
+      });
+    }
+
+    // 메인 메인 루프
+    let lastTime = performance.now();
+    function gameLoop(now) {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      updateGame(dt);
+      drawGame();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateGame(dt) {
+      const theme = getThemeByLevel(level);
+
+      // 1. 패럴랙스 스크롤
+      if (isScrolling) {
+        bgScrollX += 60 * dt;
+      }
+
+      // 2. 히어로 애니메이션
+      hero.animTimer += dt;
+      if (hero.animTimer > 0.15) {
+        hero.walkFrame = (hero.walkFrame + 1) % 4;
+        hero.animTimer = 0;
+      }
+
+      const groundY = canvas.height - 35;
+      const bounceY = (isScrolling && hero.state === 'WALK') ? Math.sin(bgScrollX * 0.15) * 3 : 0;
+      hero.y = groundY - hero.height + bounceY;
+
+      // 3. 몬스터 간헐적 공격 패턴 (등장 시)
+      if (monster.visible && monster.state === 'IDLE') {
+        monster.x = canvas.width - 70;
+        monster.y = groundY - monster.height;
+
+        monster.attackTimer += dt;
+        if (monster.attackTimer > 2.0) { // 2초마다 위협 불꽃 탄막
+          fireBall = {
+            x: monster.x,
+            y: monster.y + 10,
+            vx: -180,
+            size: 6,
+            isSmall: true
+          };
+          monster.attackTimer = 0;
+        }
+      }
+
+      // 위협 탄막 이동
+      if (fireBall && fireBall.isSmall) {
+        fireBall.x += fireBall.vx * dt;
+        if (fireBall.x < hero.x + hero.width) {
+          spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 8);
+          fireBall = null;
+        }
+      }
+
+      // 4. 파티클 업데이트
+      particles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.life;
+        if (p.alpha <= 0) particles.splice(idx, 1);
+      });
+
+      // 5. 데미지 폰트 업데이트
+      damageNumbers.forEach((d, idx) => {
+        d.y -= 20 * dt;
+        d.alpha -= 0.8 * dt;
+        if (d.scale > 1) d.scale -= 1 * dt;
+        if (d.alpha <= 0) damageNumbers.splice(idx, 1);
+      });
+
+      if (hero.blinkTimer > 0) hero.blinkTimer -= dt;
+      if (monster.blinkTimer > 0) monster.blinkTimer -= dt;
+    }
+
+    function drawGame() {
+      if (!canvas.width || !canvas.height) return;
+      const theme = getThemeByLevel(level);
+      const groundY = canvas.height - 35;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 하늘 배경
+      ctx.fillStyle = theme.sky;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 패럴랙스 중경 산
+      ctx.fillStyle = theme.mountain;
+      for (let i = -1; i < 3; i++) {
+        const mx = (i * 180) - ((bgScrollX * 0.3) % 180);
+        ctx.beginPath();
+        ctx.moveTo(mx, groundY);
+        ctx.lineTo(mx + 90, groundY - 60);
+        ctx.lineTo(mx + 180, groundY);
+        ctx.fill();
+      }
+
+      // 근경 바닥
+      ctx.fillStyle = theme.ground;
+      ctx.fillRect(0, groundY, canvas.width, 35);
+
+      // 바닥 풀밭 잔상
+      ctx.fillStyle = theme.grass;
+      ctx.fillRect(0, groundY, canvas.width, 4);
+      for (let i = -1; i < canvas.width / 20 + 1; i++) {
+        const gx = (i * 20) - ((bgScrollX) % 20);
+        ctx.fillRect(gx, groundY - 3, 10, 3);
+      }
+
+      // 히어로 픽셀 드로잉
+      if (!(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
+        ctx.save();
+        ctx.fillStyle = '#f39c12'; // 용사 갑옷
+        ctx.fillRect(hero.x, hero.y + 10, hero.width, 18);
+        
+        ctx.fillStyle = '#ffcc99'; // 얼굴
+        ctx.fillRect(hero.x + 4, hero.y, 20, 12);
+
+        ctx.fillStyle = '#e74c3c'; // 망토
+        ctx.fillRect(hero.x - 4, hero.y + 10, 6, 20);
+
+        // 다리 걷기 모션
+        ctx.fillStyle = '#2c3e50';
+        if (hero.walkFrame % 2 === 0) {
+          ctx.fillRect(hero.x + 4, hero.y + 28, 6, 8);
+          ctx.fillRect(hero.x + 18, hero.y + 26, 6, 6);
+        } else {
+          ctx.fillRect(hero.x + 4, hero.y + 26, 6, 6);
+          ctx.fillRect(hero.x + 18, hero.y + 28, 6, 8);
+        }
+        ctx.restore();
+      }
+
+      // 몬스터 픽셀 드로잉
+      if (monster.visible && !(monster.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
+        ctx.save();
+        ctx.fillStyle = '#8e44ad';
+        ctx.beginPath();
+        ctx.arc(monster.x + 16, monster.y + 18, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 몬스터 눈
+        ctx.fillStyle = '#e74c3c';
+        ctx.fillRect(monster.x + 6, monster.y + 10, 6, 6);
+        ctx.fillRect(monster.x + 20, monster.y + 10, 6, 6);
+        ctx.restore();
+      }
+
+      // 레이저 빔 연출
+      if (laserBeam) {
+        ctx.save();
+        ctx.fillStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 15;
+        ctx.fillRect(laserBeam.x, laserBeam.y, laserBeam.width, laserBeam.height);
+        ctx.restore();
+      }
+
+      // 화염구 연출
+      if (fireBall) {
+        ctx.save();
+        ctx.fillStyle = '#ff3300';
+        ctx.shadowColor = '#ff6600';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(fireBall.x, fireBall.y, fireBall.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 파티클 그리기
+      particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.restore();
+      });
+
+      // 데미지 텍스트 드로잉
+      damageNumbers.forEach(d => {
+        ctx.save();
+        ctx.globalAlpha = d.alpha;
+        ctx.font = '700 14px "Press Start 2P", sans-serif';
+        ctx.fillStyle = d.color;
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 4;
+        ctx.fillText(d.text, d.x, d.y);
+        ctx.restore();
+      });
+    }
+
+    // 연출 트리거: 클리어 시 (레이저 빔 -> 피격 깜빡임 -> 픽셀 분해)
+    function triggerClearCanvasBattle(expGain, callback) {
+      isScrolling = false;
+      monster.visible = true;
+      monster.x = canvas.width - 70;
+
+      setTimeout(() => {
+        // 레이저 빔 발사
+        laserBeam = {
+          x: hero.x + hero.width,
+          y: hero.y + 12,
+          width: monster.x - (hero.x + hero.width),
+          height: 12
+        };
+        play8BitHitSound();
+
+        setTimeout(() => {
+          laserBeam = null;
+          monster.blinkTimer = 0.6; // 3번 빠르게 깜빡임
+          spawnDamageNumber(monster.x - 10, monster.y - 10, `-${expGain * 100}`, '#00ffff');
+
+          setTimeout(() => {
+            // 픽셀 분해 파티클
+            spawnParticles(monster.x + 16, monster.y + 18, '#9b59b6', 40);
+            monster.visible = false;
+            isScrolling = true;
+            if (callback) callback();
+          }, 600);
+        }, 300);
+      }, 500);
+    }
+
+    // 연출 트리거: 실패 시 (불모양 빔 -> 캐릭터 피격 -> 깜빡임 -> 넘어짐)
+    function triggerFailCanvasBattle(expLoss, callback) {
+      isScrolling = false;
+      monster.visible = true;
+      monster.x = canvas.width - 70;
+
+      setTimeout(() => {
+        // 대형 불꽃 빔 발사
+        fireBall = {
+          x: monster.x,
+          y: monster.y + 15,
+          vx: -350,
+          size: 14,
+          isSmall: false
+        };
+
+        const fireInterval = setInterval(() => {
+          if (fireBall && fireBall.x <= hero.x + hero.width) {
+            clearInterval(fireInterval);
+            fireBall = null;
+            play8BitFailSound();
+            hero.blinkTimer = 0.6;
+            spawnDamageNumber(hero.x - 5, hero.y - 10, `-${expLoss} EXP`, '#ff0055');
+            spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 30);
+
+            setTimeout(() => {
+              monster.visible = false;
+              isScrolling = true;
+              if (callback) callback();
+            }, 800);
+          }
+        }, 16);
+      }, 500);
+    }
+
+    /* ==========================================
+       기존 PWA & 게임 데이터 처리 로직
+       ========================================== */
     function updateTodayDateDisplay() {
       const now = new Date();
       const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
@@ -432,7 +721,6 @@
       document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
     }
 
-    /* 알림 토글 기능 (켜기 / 끄기) */
     function toggleNotificationPermission() {
       if (!('Notification' in window)) {
         alert('이 브라우저는 모바일 알림을 지원하지 않습니다.');
@@ -493,14 +781,9 @@
     }
 
     let audioCtx = null;
-
     function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function play8BitHitSound() {
@@ -566,16 +849,12 @@
         let totalPenalty = 0;
         quests.forEach(q => {
           if (q.type === 'daily') {
-            if (!q.completed) {
-              totalPenalty += q.exp;
-            }
+            if (!q.completed) totalPenalty += q.exp;
             q.completed = false;
           }
         });
 
-        if (totalPenalty > 0) {
-          loseExp(totalPenalty);
-        }
+        if (totalPenalty > 0) loseExp(totalPenalty);
 
         lastResetDate = todayKST;
         localStorage.setItem('quest_last_reset', lastResetDate);
@@ -589,11 +868,9 @@
     function saveData() {
       localStorage.setItem('quest_level', level);
       localStorage.setItem('quest_exp', currentExp);
-      localStorage.setItem('quest_chosen_avatar', chosenAvatar);
       localStorage.setItem('quest_list_v2', JSON.stringify(quests));
     }
 
-    /* 1~77 레벨 세분화 칭호 시스템 */
     function getLevelBadge(lvl) {
       if (lvl >= 77) return "👑 신화적 존재";
       if (lvl >= 70) return "🔥 초월자";
@@ -609,51 +886,11 @@
 
     function updateProfile() {
       const maxExp = getMaxExp();
-      document.getElementById('heroLevel').textContent = `LV. ${level} (Max 77)`;
-      document.getElementById('heroAvatar').textContent = chosenAvatar;
-      document.getElementById('heroBadge').textContent = getLevelBadge(level);
+      document.getElementById('heroLevel').innerHTML = `LV. ${level} <span class="hero-badge-inline">${getLevelBadge(level)}</span>`;
       
       const expPercent = Math.min((currentExp / maxExp) * 100, 100);
       document.getElementById('expFill').style.width = `${expPercent}%`;
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
-    }
-
-    function openAvatarModal() {
-      if (isBattleProcessing) return;
-      const grid = document.getElementById('avatarGrid');
-      grid.innerHTML = '';
-      availableAvatars.forEach(av => {
-        const item = document.createElement('div');
-        item.className = `avatar-item ${av === chosenAvatar ? 'selected' : ''}`;
-        item.textContent = av;
-        item.onclick = () => {
-          chosenAvatar = av;
-          saveData();
-          updateProfile();
-          openAvatarModal();
-        };
-        grid.appendChild(item);
-      });
-      document.getElementById('avatarSelectModal').style.display = 'flex';
-    }
-
-    function closeAvatarModal() {
-      document.getElementById('avatarSelectModal').style.display = 'none';
-    }
-
-    function resetAllGameData() {
-      if (confirm("정말로 모든 레벨과 퀘스트 데이터를 초기화하시겠습니까?")) {
-        localStorage.clear();
-        level = 1;
-        currentExp = 0;
-        chosenAvatar = '🧙‍♂️';
-        quests = [];
-        saveData();
-        updateProfile();
-        renderQuests();
-        closeAvatarModal();
-        alert("게임 데이터가 전체 초기화되었습니다.");
-      }
     }
 
     document.getElementById('openAddModalBtn').addEventListener('click', () => {
@@ -672,7 +909,6 @@
       document.getElementById('typeOnceBtn').classList.remove('active-type');
       
       const dateGroup = document.getElementById('dateGroup');
-
       if (type === 'daily') {
         document.getElementById('typeDailyBtn').classList.add('active-type');
         dateGroup.style.display = 'none';
@@ -698,7 +934,6 @@
       listEl.innerHTML = '';
 
       const todayKST = getKSTDateString();
-
       const visibleQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
         .filter(q => q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST));
 
@@ -753,104 +988,25 @@
       isBattleProcessing = true;
       toggleAllButtons(true);
 
-      const battleStage = document.getElementById('battleStage');
-      const profileView = document.getElementById('heroProfileView');
-      const arenaView = document.getElementById('battleArenaView');
-      const heroFighter = document.getElementById('heroFighter');
-      const monsterFighter = document.getElementById('monsterFighter');
-      const vsText = document.getElementById('vsText');
-      const hitEffect = document.getElementById('hitEffect');
-      const damageText = document.getElementById('damageText');
+      // Canvas 레이저 빔 클리어 연출 실행
+      triggerClearCanvasBattle(q.exp, () => {
+        q.completed = true;
+        sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
 
-      let battleDuration = 2500;
-      if (q.exp === 10) battleDuration = 1000;
-      if (q.exp === 20) battleDuration = 2500;
-      if (q.exp === 40) battleDuration = 4000;
+        gainExp(q.exp);
 
-      profileView.style.display = 'none';
-      arenaView.style.display = 'flex';
-      
-      heroFighter.textContent = chosenAvatar;
-      monsterFighter.textContent = monsters[Math.floor(Math.random() * monsters.length)];
-      
-      heroFighter.className = 'fighter';
-      monsterFighter.className = 'fighter';
-      
-      hitEffect.className = 'hit-effect hit-effect-monster';
-      damageText.className = 'damage-text damage-text-monster';
-      
-      vsText.textContent = 'VS';
-      vsText.style.color = '#e74c3c';
-      vsText.style.opacity = '1';
+        if (q.type === 'once') {
+          quests.splice(index, 1);
+        }
 
-      const triggerHit = (dmg) => {
-        vsText.style.opacity = '0';
-        play8BitHitSound();
-
-        heroFighter.classList.add('hero-dash');
-        setTimeout(() => {
-          battleStage.classList.add('stage-shake');
-          monsterFighter.classList.add('monster-hit');
-          
-          hitEffect.classList.remove('hit-active');
-          damageText.classList.remove('damage-active');
-          void hitEffect.offsetWidth;
-          
-          hitEffect.classList.add('hit-active');
-          damageText.classList.add('damage-active');
-          damageText.textContent = `${dmg}!`;
-
-          setTimeout(() => {
-            heroFighter.classList.remove('hero-dash');
-            battleStage.classList.remove('stage-shake');
-            monsterFighter.classList.remove('monster-hit');
-          }, 200);
-        }, 150);
-      };
-
-      setTimeout(() => {
-        triggerHit(1000);
-      }, 300);
-
-      let hitInterval = setInterval(() => {
-        const randomDmg = Math.floor(Math.random() * 3000) + 2000;
-        triggerHit(randomDmg);
-      }, 600);
-
-      setTimeout(() => {
-        clearInterval(hitInterval);
-
-        monsterFighter.classList.add('monster-die');
-        play8BitVictorySound();
-        
-        vsText.textContent = 'VICTORY!';
-        vsText.style.color = '#2ecc71';
-        vsText.style.opacity = '1';
-
-        setTimeout(() => {
-          arenaView.style.display = 'none';
-          profileView.style.display = 'flex';
-
-          q.completed = true;
-          
-          sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
-
-          gainExp(q.exp);
-
-          if (q.type === 'once') {
-            quests.splice(index, 1);
-          }
-
-          saveData();
-          isBattleProcessing = false;
-          renderQuests();
-        }, 800);
-      }, battleDuration);
+        saveData();
+        isBattleProcessing = false;
+        renderQuests();
+      });
     }
 
     function loseExp(amount) {
       currentExp -= amount;
-
       while (currentExp < 0) {
         if (level > 1) {
           level--;
@@ -861,7 +1017,6 @@
           break;
         }
       }
-
       saveData();
       updateProfile();
     }
@@ -876,59 +1031,8 @@
 
       const penaltyExp = q.exp;
 
-      const battleStage = document.getElementById('battleStage');
-      const profileView = document.getElementById('heroProfileView');
-      const arenaView = document.getElementById('battleArenaView');
-      const heroFighter = document.getElementById('heroFighter');
-      const monsterFighter = document.getElementById('monsterFighter');
-      const vsText = document.getElementById('vsText');
-      const hitEffect = document.getElementById('hitEffect');
-      const damageText = document.getElementById('damageText');
-
-      profileView.style.display = 'none';
-      arenaView.style.display = 'flex';
-
-      heroFighter.textContent = chosenAvatar;
-      monsterFighter.textContent = '👿';
-      
-      heroFighter.className = 'fighter';
-      monsterFighter.className = 'fighter';
-
-      hitEffect.className = 'hit-effect hit-effect-hero';
-      damageText.className = 'damage-text damage-text-hero';
-
-      vsText.innerHTML = `QUEST FAILED!`;
-      vsText.style.color = '#e74c3c';
-      vsText.style.opacity = '1';
-
-      setTimeout(() => {
-        vsText.style.opacity = '0';
-        monsterFighter.classList.add('monster-dash');
-
-        setTimeout(() => {
-          play8BitFailSound();
-          battleStage.classList.add('stage-shake');
-          heroFighter.classList.add('hero-hit-die');
-
-          hitEffect.classList.add('hit-active');
-          damageText.classList.add('damage-active');
-          damageText.textContent = `-${penaltyExp} EXP`;
-
-          setTimeout(() => {
-            monsterFighter.classList.remove('monster-dash');
-            battleStage.classList.remove('stage-shake');
-          }, 300);
-        }, 150);
-      }, 300);
-
-      setTimeout(() => {
-        arenaView.style.display = 'none';
-        profileView.style.display = 'flex';
-
-        hitEffect.classList.remove('hit-active');
-        damageText.classList.remove('damage-active');
-        heroFighter.classList.remove('hero-hit-die');
-
+      // Canvas 화염구 실패 연출 실행
+      triggerFailCanvasBattle(penaltyExp, () => {
         sendNotification('💥 퀘스트 실패!', `'${q.text}' 퀘스트에 실패했습니다. (-${penaltyExp} EXP 감가)`);
 
         quests.splice(index, 1);
@@ -936,7 +1040,7 @@
         
         isBattleProcessing = false;
         renderQuests();
-      }, 2000);
+      });
     }
 
     function removeQuestWithoutPenalty(index) {
@@ -964,7 +1068,6 @@
       updateProfile();
     }
 
-    /* 레벨 업 & 랜덤박스 보너스 모달 로직 */
     function showLevelUpModal() {
       sendNotification('🎉 LEVEL UP!', `축하합니다! LV. ${level} (${getLevelBadge(level)})로 승급했습니다!`);
       
@@ -983,8 +1086,6 @@
       isRandomBoxOpened = true;
 
       play8BitVictorySound();
-      
-      // 50 ~ 200 랜덤 보너스 경험치
       const bonusExp = Math.floor(Math.random() * 151) + 50;
       
       document.getElementById('randomBox').textContent = '💎';
@@ -1021,7 +1122,6 @@
       document.getElementById('inputPageModal').style.display = 'none';
     });
 
-    /* 스케줄러: 밤 11시(23:00) 미완료 알림 & 밤 11시 50분(23:50) 미완료 자동 실패 */
     let lastNotified11PMDate = localStorage.getItem('quest_last_notified_11pm') || '';
     let lastAutoFailedDate = localStorage.getItem('quest_last_autofailed') || '';
 
@@ -1031,10 +1131,8 @@
       const hours = now.getHours();
       const minutes = now.getMinutes();
 
-      // 오늘 수행할 미완료 퀘스트 감지
       const uncompletedQuests = quests.filter(q => !q.completed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
 
-      // 1. 매일 밤 11시 (23:00) 미완료 퀘스트 알림
       if (hours === 23 && minutes >= 0 && minutes < 50 && lastNotified11PMDate !== todayKST) {
         if (uncompletedQuests.length > 0) {
           sendNotification('⏰ [LifeQuest] 미완료 퀘스트 알림!', `오늘 완료하지 않은 퀘스트가 ${uncompletedQuests.length}개 남아있습니다! 11시 50분 전에 클리어하세요.`);
@@ -1043,7 +1141,6 @@
         localStorage.setItem('quest_last_notified_11pm', todayKST);
       }
 
-      // 2. 매일 밤 11시 50분 (23:50) 미완료 퀘스트 자동 실패 처리
       if (hours === 23 && minutes >= 50 && lastAutoFailedDate !== todayKST) {
         let failedCount = 0;
         let totalPenalty = 0;
@@ -1072,8 +1169,12 @@
 
     function startScheduleWatcher() {
       checkNightSchedules();
-      setInterval(checkNightSchedules, 10000); // 10초 주기 실시간 검사
+      setInterval(checkNightSchedules, 10000);
     }
+
+    // 엔진 및 게임 초기화
+    resizeCanvas();
+    requestAnimationFrame(gameLoop);
 
     updateTodayDateDisplay();
     updateNotificationBtnStatus();

@@ -380,18 +380,17 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // 테마 설정 (레벨별 배경)
     function getThemeByLevel(lvl) {
-      if (lvl >= 50) return { sky: '#11052C', mountain: '#3D087B', ground: '#F43B86', grass: '#FFE459' }; // 우주/마왕성
-      if (lvl >= 30) return { sky: '#1A0000', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C' }; // 용암/화산
-      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#3A506B', grass: '#5BC0BE' }; // 밤의 던전
-      return { sky: '#1b2a47', mountain: '#2d4059', ground: '#2b3a42', grass: '#2ecc71' }; // 푸른 평원
+      if (lvl >= 50) return { sky: '#11052C', mountain: '#3D087B', ground: '#F43B86', grass: '#FFE459' };
+      if (lvl >= 30) return { sky: '#1A0000', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C' };
+      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#3A506B', grass: '#5BC0BE' };
+      return { sky: '#1b2a47', mountain: '#2d4059', ground: '#2b3a42', grass: '#2ecc71' };
     }
 
     let bgScrollX = 0;
     let isScrolling = true;
 
-    // 히어로 객체 (픽셀 렌더링)
+    // 히어로 상태 관리
     const hero = {
       x: 50,
       y: 0,
@@ -399,29 +398,28 @@
       height: 36,
       walkFrame: 0,
       animTimer: 0,
-      state: 'WALK', // 'WALK', 'ATTACK', 'HIT'
-      blinkTimer: 0
+      state: 'WALK', // 'WALK', 'DEAD'
+      visible: true,
+      blinkTimer: 0,
+      rotation: 0
     };
 
-    // 몬스터 객체
+    // 몬스터 상태 관리
     const monster = {
       x: 9999,
       y: 0,
       width: 32,
       height: 38,
       visible: false,
-      state: 'IDLE', // 'IDLE', 'ATTACK', 'HIT'
       blinkTimer: 0,
       attackTimer: 0
     };
 
-    // 이펙트 및 파티클 시스템
     let laserBeam = null;
     let fireBall = null;
     let particles = [];
     let damageNumbers = [];
 
-    // 파티클 생성
     function spawnParticles(x, y, color, count = 25) {
       for (let i = 0; i < count; i++) {
         particles.push({
@@ -437,7 +435,6 @@
       }
     }
 
-    // 데미지 텍스트 생성
     function spawnDamageNumber(x, y, text, color) {
       damageNumbers.push({
         x: x,
@@ -449,7 +446,6 @@
       });
     }
 
-    // 메인 메인 루프
     let lastTime = performance.now();
     function gameLoop(now) {
       const dt = (now - lastTime) / 1000;
@@ -462,14 +458,10 @@
     }
 
     function updateGame(dt) {
-      const theme = getThemeByLevel(level);
-
-      // 1. 패럴랙스 스크롤
       if (isScrolling) {
         bgScrollX += 60 * dt;
       }
 
-      // 2. 히어로 애니메이션
       hero.animTimer += dt;
       if (hero.animTimer > 0.15) {
         hero.walkFrame = (hero.walkFrame + 1) % 4;
@@ -478,15 +470,21 @@
 
       const groundY = canvas.height - 35;
       const bounceY = (isScrolling && hero.state === 'WALK') ? Math.sin(bgScrollX * 0.15) * 3 : 0;
-      hero.y = groundY - hero.height + bounceY;
+      
+      if (hero.state === 'WALK') {
+        hero.y = groundY - hero.height + bounceY;
+        hero.rotation = 0;
+      } else if (hero.state === 'DEAD') {
+        hero.y = groundY - 14; // 바닥으로 쓰러짐
+        hero.rotation = 90 * (Math.PI / 180);
+      }
 
-      // 3. 몬스터 간헐적 공격 패턴 (등장 시)
-      if (monster.visible && monster.state === 'IDLE') {
+      if (monster.visible) {
         monster.x = canvas.width - 70;
         monster.y = groundY - monster.height;
 
         monster.attackTimer += dt;
-        if (monster.attackTimer > 2.0) { // 2초마다 위협 불꽃 탄막
+        if (monster.attackTimer > 2.0 && isScrolling) {
           fireBall = {
             x: monster.x,
             y: monster.y + 10,
@@ -498,7 +496,6 @@
         }
       }
 
-      // 위협 탄막 이동
       if (fireBall && fireBall.isSmall) {
         fireBall.x += fireBall.vx * dt;
         if (fireBall.x < hero.x + hero.width) {
@@ -507,7 +504,6 @@
         }
       }
 
-      // 4. 파티클 업데이트
       particles.forEach((p, idx) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -515,7 +511,6 @@
         if (p.alpha <= 0) particles.splice(idx, 1);
       });
 
-      // 5. 데미지 폰트 업데이트
       damageNumbers.forEach((d, idx) => {
         d.y -= 20 * dt;
         d.alpha -= 0.8 * dt;
@@ -534,11 +529,9 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 하늘 배경
       ctx.fillStyle = theme.sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 패럴랙스 중경 산
       ctx.fillStyle = theme.mountain;
       for (let i = -1; i < 3; i++) {
         const mx = (i * 180) - ((bgScrollX * 0.3) % 180);
@@ -549,11 +542,9 @@
         ctx.fill();
       }
 
-      // 근경 바닥
       ctx.fillStyle = theme.ground;
       ctx.fillRect(0, groundY, canvas.width, 35);
 
-      // 바닥 풀밭 잔상
       ctx.fillStyle = theme.grass;
       ctx.fillRect(0, groundY, canvas.width, 4);
       for (let i = -1; i < canvas.width / 20 + 1; i++) {
@@ -561,31 +552,35 @@
         ctx.fillRect(gx, groundY - 3, 10, 3);
       }
 
-      // 히어로 픽셀 드로잉
-      if (!(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
+      // 히어로 렌더링 (사망/피격 애니메이션 수정)
+      if (hero.visible && !(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
         ctx.save();
-        ctx.fillStyle = '#f39c12'; // 용사 갑옷
+        ctx.translate(hero.x + hero.width / 2, hero.y + hero.height / 2);
+        if (hero.rotation !== 0) ctx.rotate(hero.rotation);
+        ctx.translate(-(hero.x + hero.width / 2), -(hero.y + hero.height / 2));
+
+        ctx.fillStyle = '#f39c12';
         ctx.fillRect(hero.x, hero.y + 10, hero.width, 18);
         
-        ctx.fillStyle = '#ffcc99'; // 얼굴
+        ctx.fillStyle = '#ffcc99';
         ctx.fillRect(hero.x + 4, hero.y, 20, 12);
 
-        ctx.fillStyle = '#e74c3c'; // 망토
+        ctx.fillStyle = '#e74c3c';
         ctx.fillRect(hero.x - 4, hero.y + 10, 6, 20);
 
-        // 다리 걷기 모션
         ctx.fillStyle = '#2c3e50';
-        if (hero.walkFrame % 2 === 0) {
-          ctx.fillRect(hero.x + 4, hero.y + 28, 6, 8);
-          ctx.fillRect(hero.x + 18, hero.y + 26, 6, 6);
-        } else {
-          ctx.fillRect(hero.x + 4, hero.y + 26, 6, 6);
-          ctx.fillRect(hero.x + 18, hero.y + 28, 6, 8);
+        if (hero.state === 'WALK') {
+          if (hero.walkFrame % 2 === 0) {
+            ctx.fillRect(hero.x + 4, hero.y + 28, 6, 8);
+            ctx.fillRect(hero.x + 18, hero.y + 26, 6, 6);
+          } else {
+            ctx.fillRect(hero.x + 4, hero.y + 26, 6, 6);
+            ctx.fillRect(hero.x + 18, hero.y + 28, 6, 8);
+          }
         }
         ctx.restore();
       }
 
-      // 몬스터 픽셀 드로잉
       if (monster.visible && !(monster.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
         ctx.save();
         ctx.fillStyle = '#8e44ad';
@@ -593,14 +588,12 @@
         ctx.arc(monster.x + 16, monster.y + 18, 16, 0, Math.PI * 2);
         ctx.fill();
 
-        // 몬스터 눈
         ctx.fillStyle = '#e74c3c';
         ctx.fillRect(monster.x + 6, monster.y + 10, 6, 6);
         ctx.fillRect(monster.x + 20, monster.y + 10, 6, 6);
         ctx.restore();
       }
 
-      // 레이저 빔 연출
       if (laserBeam) {
         ctx.save();
         ctx.fillStyle = '#00ffff';
@@ -610,7 +603,6 @@
         ctx.restore();
       }
 
-      // 화염구 연출
       if (fireBall) {
         ctx.save();
         ctx.fillStyle = '#ff3300';
@@ -622,7 +614,6 @@
         ctx.restore();
       }
 
-      // 파티클 그리기
       particles.forEach(p => {
         ctx.save();
         ctx.globalAlpha = p.alpha;
@@ -631,7 +622,6 @@
         ctx.restore();
       });
 
-      // 데미지 텍스트 드로잉
       damageNumbers.forEach(d => {
         ctx.save();
         ctx.globalAlpha = d.alpha;
@@ -644,14 +634,13 @@
       });
     }
 
-    // 연출 트리거: 클리어 시 (레이저 빔 -> 피격 깜빡임 -> 픽셀 분해)
+    // 클리어 연출
     function triggerClearCanvasBattle(expGain, callback) {
       isScrolling = false;
       monster.visible = true;
       monster.x = canvas.width - 70;
 
       setTimeout(() => {
-        // 레이저 빔 발사
         laserBeam = {
           x: hero.x + hero.width,
           y: hero.y + 12,
@@ -662,11 +651,10 @@
 
         setTimeout(() => {
           laserBeam = null;
-          monster.blinkTimer = 0.6; // 3번 빠르게 깜빡임
+          monster.blinkTimer = 0.6;
           spawnDamageNumber(monster.x - 10, monster.y - 10, `-${expGain * 100}`, '#00ffff');
 
           setTimeout(() => {
-            // 픽셀 분해 파티클
             spawnParticles(monster.x + 16, monster.y + 18, '#9b59b6', 40);
             monster.visible = false;
             isScrolling = true;
@@ -676,14 +664,13 @@
       }, 500);
     }
 
-    // 연출 트리거: 실패 시 (불모양 빔 -> 캐릭터 피격 -> 깜빡임 -> 넘어짐)
+    // 실패 연출 (버그 수정: 내 캐릭터 피격/사망/부활)
     function triggerFailCanvasBattle(expLoss, callback) {
       isScrolling = false;
       monster.visible = true;
       monster.x = canvas.width - 70;
 
       setTimeout(() => {
-        // 대형 불꽃 빔 발사
         fireBall = {
           x: monster.x,
           y: monster.y + 15,
@@ -697,22 +684,38 @@
             clearInterval(fireInterval);
             fireBall = null;
             play8BitFailSound();
+            
+            // 피격 및 데미지
             hero.blinkTimer = 0.6;
             spawnDamageNumber(hero.x - 5, hero.y - 10, `-${expLoss} EXP`, '#ff0055');
             spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 30);
 
             setTimeout(() => {
-              monster.visible = false;
-              isScrolling = true;
-              if (callback) callback();
-            }, 800);
+              // 붉게 깜빡인 후 쓰러짐 (DEAD)
+              hero.state = 'DEAD';
+              
+              setTimeout(() => {
+                // 부활 준비 (사라졌다가 다시 짠)
+                hero.visible = false;
+                spawnParticles(hero.x + 14, hero.y + 18, '#ffcc99', 20);
+
+                setTimeout(() => {
+                  hero.state = 'WALK';
+                  hero.visible = true;
+                  hero.blinkTimer = 0.5;
+                  monster.visible = false;
+                  isScrolling = true;
+                  if (callback) callback();
+                }, 600);
+              }, 600);
+            }, 600);
           }
         }, 16);
       }, 500);
     }
 
     /* ==========================================
-       기존 PWA & 게임 데이터 처리 로직
+       PWA & 게임 데이터 처리 로직
        ========================================== */
     function updateTodayDateDisplay() {
       const now = new Date();
@@ -850,7 +853,7 @@
         quests.forEach(q => {
           if (q.type === 'daily') {
             if (!q.completed) totalPenalty += q.exp;
-            q.completed = false;
+            q.completed = false; // 매일 리셋 시 다시 수행 가능 상태로 만듦
           }
         });
 
@@ -988,13 +991,13 @@
       isBattleProcessing = true;
       toggleAllButtons(true);
 
-      // Canvas 레이저 빔 클리어 연출 실행
       triggerClearCanvasBattle(q.exp, () => {
         q.completed = true;
         sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
 
         gainExp(q.exp);
 
+        // 1회성 퀘스트만 완료 시 삭제 (일일 퀘스트는 남겨둠)
         if (q.type === 'once') {
           quests.splice(index, 1);
         }
@@ -1021,6 +1024,7 @@
       updateProfile();
     }
 
+    // 버그 수정: 실패 시 일일 퀘스트는 삭제하지 않고 1회성 퀘스트만 삭제
     function failQuest(index) {
       if (isBattleProcessing) return;
       const q = quests[index];
@@ -1031,11 +1035,13 @@
 
       const penaltyExp = q.exp;
 
-      // Canvas 화염구 실패 연출 실행
       triggerFailCanvasBattle(penaltyExp, () => {
         sendNotification('💥 퀘스트 실패!', `'${q.text}' 퀘스트에 실패했습니다. (-${penaltyExp} EXP 감가)`);
 
-        quests.splice(index, 1);
+        // 1회성 퀘스트만 실패 시 삭제
+        if (q.type === 'once') {
+          quests.splice(index, 1);
+        }
         loseExp(penaltyExp);
         
         isBattleProcessing = false;
@@ -1125,6 +1131,7 @@
     let lastNotified11PMDate = localStorage.getItem('quest_last_notified_11pm') || '';
     let lastAutoFailedDate = localStorage.getItem('quest_last_autofailed') || '';
 
+    // 버그 수정: 밤 11:50분 자동 실패 시에도 일일 퀘스트는 삭제되지 않음
     function checkNightSchedules() {
       const now = new Date();
       const todayKST = getKSTDateString();
@@ -1150,7 +1157,8 @@
           if (isTodayQuest && !q.completed) {
             failedCount++;
             totalPenalty += q.exp;
-            return false;
+            // 1회성 퀘스트만 자동 실패 시 삭제
+            return q.type === 'daily'; 
           }
           return true;
         });
@@ -1172,7 +1180,6 @@
       setInterval(checkNightSchedules, 10000);
     }
 
-    // 엔진 및 게임 초기화
     resizeCanvas();
     requestAnimationFrame(gameLoop);
 

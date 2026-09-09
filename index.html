@@ -235,16 +235,25 @@
 
     .input-form-body { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; flex: 1; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 12px; color: #5d4037; font-weight: 700; }
+    .form-group label { font-size: 12px; color: #5d4037; font-weight: 700; display: flex; justify-content: space-between; }
     .quest-input-full { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700; }
     .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700; cursor: pointer; }
 
     .btn-toggle-box { display: flex; gap: 6px; }
     .opt-btn { flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s; }
     .opt-btn.active-type { background: #5c6bc0; color: white; border-color: #3f51b5; }
-    .opt-btn-easy.active-diff { background: #4caf50; color: white; border-color: #2e7d32; }
-    .opt-btn-medium.active-diff { background: #ffb300; color: #3e2723; border-color: #ff8f00; }
-    .opt-btn-hard.active-diff { background: #e53935; color: white; border-color: #c62828; }
+
+    /* 게이지 슬라이더 스타일 */
+    .diff-gauge-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .diff-slider {
+      flex: 1; -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; background: #d7ccc8; outline: none; border: 1px solid #8d6e63;
+    }
+    .diff-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #f39c12; cursor: pointer; border: 2px solid #4e342e; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .diff-value-badge {
+      font-family: 'Press Start 2P', cursive; font-size: 11px; color: #d35400; background: #fff8e1; padding: 4px 8px; border-radius: 6px; border: 1px solid #a1887f; min-width: 75px; text-align: center;
+    }
 
     .level-up-modal, .avatar-select-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
@@ -324,11 +333,13 @@
         </div>
 
         <div class="form-group">
-          <label>난이도 설정</label>
-          <div class="btn-toggle-box">
-            <div class="opt-btn opt-btn-easy" id="diff10Btn" onclick="selectDiff(10)">🟢 쉬움 (+10 EXP)</div>
-            <div class="opt-btn opt-btn-medium active-diff" id="diff20Btn" onclick="selectDiff(20)">🟡 보통 (+20 EXP)</div>
-            <div class="opt-btn opt-btn-hard" id="diff40Btn" onclick="selectDiff(40)">🔴 어려움 (+40 EXP)</div>
+          <label>
+            <span>난이도 게이지 (10~50)</span>
+            <span id="diffLabelText" style="color: #d35400; font-weight: 700;">보통 (+20 EXP)</span>
+          </label>
+          <div class="diff-gauge-wrapper">
+            <input type="range" min="10" max="50" step="5" value="20" class="diff-slider" id="diffRangeInput" oninput="onDiffSliderChange(this.value)">
+            <div class="diff-value-badge" id="diffValueBadge">+20 EXP</div>
           </div>
         </div>
       </div>
@@ -389,7 +400,6 @@
     let bgScrollX = 0;
     let isScrolling = true;
 
-    // 히어로
     const hero = {
       x: 40,
       y: 0,
@@ -403,25 +413,23 @@
       rotation: 0
     };
 
-    // 몬스터 (3개 클래스: SLIME, GOBLIN, DRAGON)
     const monster = {
       x: 9999,
       y: 0,
       width: 40,
       height: 40,
-      type: 'SLIME', // 'SLIME', 'GOBLIN', 'DRAGON'
+      type: 'SLIME',
       visible: false,
       blinkTimer: 0,
       attackTimer: 0,
       animFrame: 0
     };
 
-    let laserBeam = null;
-    let fireBall = null;
+    let blueFlames = []; // 내 캐릭터 파란 불꽃 투사체
+    let fireBall = null; // 몬스터 불꽃
     let particles = [];
     let damageNumbers = [];
 
-    // 별 배경 데이터
     const bgStars = Array.from({ length: 30 }, () => ({
       x: Math.random() * 400,
       y: Math.random() * 80,
@@ -506,9 +514,24 @@
         }
       }
 
+      // 내 캐릭터 파란 불꽃 투사체 이동
+      blueFlames.forEach((bf, idx) => {
+        bf.x += bf.vx * dt;
+        // 파란 불꽃 잔상 파티클
+        if (Math.random() < 0.7) {
+          spawnParticles(bf.x, bf.y, '#00f0ff', 1);
+        }
+        if (bf.x >= monster.x) {
+          spawnParticles(bf.x, bf.y, '#00f0ff', 15, true);
+          play8BitHitSound();
+          monster.blinkTimer = 0.2;
+          spawnDamageNumber(monster.x - 5, monster.y - 15, `-${bf.damage}`, '#00f0ff');
+          blueFlames.splice(idx, 1);
+        }
+      });
+
       if (fireBall) {
         fireBall.x += fireBall.vx * dt;
-        // 화염구 연기 파티클
         if (Math.random() < 0.6) {
           spawnParticles(fireBall.x, fireBall.y, '#e67e22', 1);
         }
@@ -537,7 +560,6 @@
       if (monster.blinkTimer > 0) monster.blinkTimer -= dt;
     }
 
-    /* 🎨 고퀄리티 CANVAS 드로잉 메서드들 */
     function drawGame() {
       if (!canvas.width || !canvas.height) return;
       const theme = getThemeByLevel(level);
@@ -545,11 +567,9 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 하늘 배경
       ctx.fillStyle = theme.sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 별 그리기
       if (theme.stars) {
         ctx.fillStyle = '#ffffff';
         bgStars.forEach(s => {
@@ -559,7 +579,6 @@
         ctx.globalAlpha = 1.0;
       }
 
-      // 2. 패럴랙스 중경 산 & 성 실루엣
       ctx.fillStyle = theme.mountain;
       for (let i = -1; i < 3; i++) {
         const mx = (i * 200) - ((bgScrollX * 0.25) % 200);
@@ -571,11 +590,9 @@
         ctx.fill();
       }
 
-      // 3. 근경 바닥
       ctx.fillStyle = theme.ground;
       ctx.fillRect(0, groundY, canvas.width, 35);
 
-      // 잔디/타일 상단 드로잉
       ctx.fillStyle = theme.grass;
       ctx.fillRect(0, groundY, canvas.width, 4);
       for (let i = -1; i < canvas.width / 16 + 1; i++) {
@@ -583,37 +600,34 @@
         ctx.fillRect(gx, groundY - 3, 8, 3);
       }
 
-      // 4. 히어로 (디테일 픽셀 마법사)
       if (hero.visible && !(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
         drawDetailedHero(hero.x, hero.y, hero.rotation, hero.walkFrame);
       }
 
-      // 5. 난이도별 디테일 몬스터
       if (monster.visible && !(monster.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
         drawDetailedMonster(monster.x, monster.y, monster.type, monster.animFrame);
       }
 
-      // 6. 네온 글로우 레이저 빔
-      if (laserBeam) {
+      // 내 캐릭터 파란 불꽃(Blue Flame) 드로잉
+      blueFlames.forEach(bf => {
         ctx.save();
-        // 외곽 광채
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
-        ctx.fillRect(laserBeam.x, laserBeam.y - 6, laserBeam.width, laserBeam.height + 12);
-        // 코어 빔
+        ctx.fillStyle = '#00f0ff';
+        ctx.beginPath();
+        ctx.arc(bf.x, bf.y, bf.size + 3, 0, Math.PI * 2);
+        ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(laserBeam.x, laserBeam.y, laserBeam.width, laserBeam.height);
+        ctx.beginPath();
+        ctx.arc(bf.x, bf.y, bf.size, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
-      }
+      });
 
-      // 7. 이중 화염구 (Fireball)
       if (fireBall) {
         ctx.save();
-        // 외곽 화염
         ctx.fillStyle = '#e74c3c';
         ctx.beginPath();
         ctx.arc(fireBall.x, fireBall.y, fireBall.size + 4, 0, Math.PI * 2);
         ctx.fill();
-        // 내부 코어
         ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
         ctx.arc(fireBall.x, fireBall.y, fireBall.size, 0, Math.PI * 2);
@@ -621,7 +635,6 @@
         ctx.restore();
       }
 
-      // 8. 파티클
       particles.forEach(p => {
         ctx.save();
         ctx.globalAlpha = p.alpha;
@@ -630,7 +643,6 @@
         ctx.restore();
       });
 
-      // 9. 데미지 텍스트
       damageNumbers.forEach(d => {
         ctx.save();
         ctx.globalAlpha = d.alpha;
@@ -643,42 +655,36 @@
       });
     }
 
-    /* 🧙‍♂️ 디테일 히어로 드로잉 함수 */
     function drawDetailedHero(x, y, rotation, frame) {
       ctx.save();
       ctx.translate(x + 16, y + 21);
       if (rotation !== 0) ctx.rotate(rotation);
       ctx.translate(-(x + 16), -(y + 21));
 
-      // 뾰족 마법사 모자
       ctx.fillStyle = '#34495e';
       ctx.beginPath();
       ctx.moveTo(x + 4, y + 10);
       ctx.lineTo(x + 16, y - 6);
       ctx.lineTo(x + 28, y + 10);
       ctx.fill();
-      ctx.fillStyle = '#f39c12'; // 모자 띠
+      ctx.fillStyle = '#f39c12';
       ctx.fillRect(x + 6, y + 8, 20, 3);
 
-      // 얼굴 & 눈
       ctx.fillStyle = '#ffcc99';
       ctx.fillRect(x + 8, y + 11, 16, 10);
-      ctx.fillStyle = '#2c3e50'; // 눈동자
+      ctx.fillStyle = '#2c3e50';
       ctx.fillRect(x + 18, y + 14, 3, 4);
 
-      // 의상 & 망토
-      ctx.fillStyle = '#e74c3c'; // 붉은 망토
+      ctx.fillStyle = '#e74c3c';
       ctx.fillRect(x + 2, y + 20, 8, 16);
-      ctx.fillStyle = '#2980b9'; // 로브
+      ctx.fillStyle = '#2980b9';
       ctx.fillRect(x + 8, y + 21, 16, 14);
 
-      // 지팡이
       ctx.fillStyle = '#7f8c8d';
       ctx.fillRect(x + 24, y + 12, 3, 24);
-      ctx.fillStyle = '#00f0ff'; // 마법 보석
+      ctx.fillStyle = '#00f0ff';
       ctx.fillRect(x + 23, y + 8, 5, 5);
 
-      // 다리 걷기 애니메이션
       ctx.fillStyle = '#111';
       if (hero.state === 'WALK') {
         if (frame % 2 === 0) {
@@ -692,17 +698,14 @@
       ctx.restore();
     }
 
-    /* 👾 난이도별 디테일 몬스터 드로잉 함수 */
     function drawDetailedMonster(x, y, type, frame) {
       ctx.save();
       if (type === 'SLIME') {
-        // 🟢 쉬움: 말랑말랑 슬라임
         const squish = Math.sin(frame * 1.5) * 3;
         ctx.fillStyle = '#2ecc71';
         ctx.beginPath();
         ctx.ellipse(x + 18, y + 22 + squish / 2, 16, 14 - squish / 2, 0, 0, Math.PI * 2);
         ctx.fill();
-        // 눈 & 하이라이트
         ctx.fillStyle = '#fff';
         ctx.fillRect(x + 10, y + 16, 5, 5);
         ctx.fillRect(x + 20, y + 16, 5, 5);
@@ -711,23 +714,18 @@
         ctx.fillRect(x + 22, y + 18, 2, 2);
 
       } else if (type === 'GOBLIN') {
-        // 🟡 보통: 임프/고블린
-        ctx.fillStyle = '#e67e22'; // 몸체
+        ctx.fillStyle = '#e67e22';
         ctx.fillRect(x + 8, y + 12, 20, 22);
-        // 뿔 & 귀
         ctx.fillStyle = '#c0392b';
         ctx.fillRect(x + 4, y + 4, 6, 8);
         ctx.fillRect(x + 26, y + 4, 6, 8);
-        // 날카로운 눈
         ctx.fillStyle = '#f1c40f';
         ctx.fillRect(x + 10, y + 16, 5, 4);
         ctx.fillRect(x + 21, y + 16, 5, 4);
 
       } else if (type === 'DRAGON') {
-        // 🔴 어려움: 거대 보스 드래곤
         ctx.fillStyle = '#c0392b';
         ctx.fillRect(x + 10, y + 8, 38, 32);
-        // 날개 애니메이션
         const wingY = Math.sin(frame * 2) * 4;
         ctx.fillStyle = '#8e44ad';
         ctx.beginPath();
@@ -735,7 +733,6 @@
         ctx.lineTo(x + 5, y - 6 + wingY);
         ctx.lineTo(x + 18, y + 22);
         ctx.fill();
-        // 안광 & 이빨
         ctx.fillStyle = '#00f0ff';
         ctx.fillRect(x + 16, y + 14, 7, 5);
         ctx.fillStyle = '#fff';
@@ -745,48 +742,55 @@
       ctx.restore();
     }
 
-    // 클리어 연출
+    // 클리어 연출: 난이도에 따라 연출 시간 및 타수 연장 + 파란 불꽃 공격
     function triggerClearCanvasBattle(expGain, callback) {
       isScrolling = false;
       monster.visible = true;
 
-      // 난이도별 몬스터 세팅
-      if (expGain === 10) monster.type = 'SLIME';
-      else if (expGain === 40) monster.type = 'DRAGON';
+      if (expGain <= 15) monster.type = 'SLIME';
+      else if (expGain >= 35) monster.type = 'DRAGON';
       else monster.type = 'GOBLIN';
 
       monster.x = canvas.width - (monster.type === 'DRAGON' ? 90 : 70);
 
-      setTimeout(() => {
-        laserBeam = {
+      // 난이도(10~50)에 따른 발사 타수 (1 ~ 5회)
+      const hitCount = Math.max(1, Math.floor(expGain / 10));
+      let currentHit = 0;
+
+      const shootBlueFlame = () => {
+        blueFlames.push({
           x: hero.x + hero.width,
-          y: hero.y + 12,
-          width: monster.x - (hero.x + hero.width),
-          height: 10
-        };
-        play8BitHitSound();
-        spawnParticles(monster.x + 10, hero.y + 12, '#00f0ff', 15, true);
+          y: hero.y + 10,
+          vx: 380,
+          size: 7,
+          damage: Math.floor(expGain * 100 / hitCount)
+        });
+        currentHit++;
 
-        setTimeout(() => {
-          laserBeam = null;
-          monster.blinkTimer = 0.6;
-          spawnDamageNumber(monster.x - 10, monster.y - 10, `-${expGain * 100}`, '#00ffff');
-
+        if (currentHit < hitCount) {
+          setTimeout(shootBlueFlame, 350);
+        } else {
+          // 마지막 타격 후 몬스터 소멸
           setTimeout(() => {
-            spawnParticles(monster.x + 16, monster.y + 18, monster.type === 'DRAGON' ? '#e74c3c' : '#2ecc71', 45);
-            monster.visible = false;
-            isScrolling = true;
-            if (callback) callback();
-          }, 600);
-        }, 300);
-      }, 500);
+            monster.blinkTimer = 0.6;
+            setTimeout(() => {
+              spawnParticles(monster.x + 16, monster.y + 18, monster.type === 'DRAGON' ? '#e74c3c' : '#2ecc71', 45);
+              monster.visible = false;
+              isScrolling = true;
+              if (callback) callback();
+            }, 600);
+          }, 400);
+        }
+      };
+
+      setTimeout(shootBlueFlame, 400);
     }
 
-    // 실패 연출
+    // 실패 연출: 난이도에 따라 몬스터 불꽃 연출
     function triggerFailCanvasBattle(expLoss, callback) {
       isScrolling = false;
       monster.visible = true;
-      monster.type = 'DRAGON'; // 실패 시 강력한 드래곤 등장
+      monster.type = 'DRAGON';
       monster.x = canvas.width - 90;
 
       setTimeout(() => {
@@ -968,8 +972,9 @@
         let totalPenalty = 0;
         quests.forEach(q => {
           if (q.type === 'daily') {
-            if (!q.completed) totalPenalty += q.exp;
-            q.completed = false;
+            if (!q.completed && !q.failed) totalPenalty += q.exp;
+            q.completed = false; // 리셋 시 다시 진행 가능하게 비활성화 해제
+            q.failed = false;
           }
         });
 
@@ -1037,15 +1042,16 @@
       }
     }
 
-    function selectDiff(exp) {
-      selectedDiff = exp;
-      document.getElementById('diff10Btn').classList.remove('active-diff');
-      document.getElementById('diff20Btn').classList.remove('active-diff');
-      document.getElementById('diff40Btn').classList.remove('active-diff');
-
-      if (exp === 10) document.getElementById('diff10Btn').classList.add('active-diff');
-      if (exp === 20) document.getElementById('diff20Btn').classList.add('active-diff');
-      if (exp === 40) document.getElementById('diff40Btn').classList.add('active-diff');
+    // 난이도 슬라이더 변경 함수
+    function onDiffSliderChange(val) {
+      selectedDiff = parseInt(val);
+      document.getElementById('diffValueBadge').textContent = `+${selectedDiff} EXP`;
+      
+      let labelText = "쉬움";
+      if (selectedDiff >= 20) labelText = "보통";
+      if (selectedDiff >= 35) labelText = "어려움";
+      if (selectedDiff >= 45) labelText = "매우 어려움";
+      document.getElementById('diffLabelText').textContent = `${labelText} (+${selectedDiff} EXP)`;
     }
 
     function renderQuests() {
@@ -1061,29 +1067,32 @@
         return;
       }
 
-      const sortedQuests = visibleQuests.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+      const sortedQuests = visibleQuests.sort((a, b) => ((a.completed || a.failed) === (b.completed || b.failed) ? 0 : (a.completed || a.failed) ? 1 : -1));
 
       sortedQuests.forEach((q) => {
         const index = q.originalIndex;
+        const isDone = q.completed || q.failed;
         const card = document.createElement('div');
-        card.className = `quest-card ${q.completed ? 'completed-card' : ''}`;
+        card.className = `quest-card ${isDone ? 'completed-card' : ''}`;
         
         const typeBadge = q.type === 'daily' 
           ? '<span class="quest-type-badge badge-daily">일일</span>' 
           : '<span class="quest-type-badge badge-once">일반</span>';
 
-        const diffText = q.exp === 10 ? '쉬움 (+10)' : (q.exp === 40 ? '어려움 (+40)' : '보통 (+20)');
+        let clearBtnText = '클리어';
+        if (q.completed) clearBtnText = '완료됨 ✔';
+        if (q.failed) clearBtnText = '실패함 ✖';
 
         card.innerHTML = `
           <div class="quest-info">
             <div class="quest-title">${typeBadge} ${q.text}</div>
-            <div class="difficulty-tag">난이도: ${diffText}</div>
+            <div class="difficulty-tag">난이도: +${q.exp} EXP</div>
           </div>
           <div class="quest-actions">
-            <button class="clear-btn" id="btn-clear-${index}" ${q.completed || isBattleProcessing ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
-              ${q.completed ? '완료됨 ✔' : '클리어'}
+            <button class="clear-btn" id="btn-clear-${index}" ${isDone || isBattleProcessing ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
+              ${clearBtnText}
             </button>
-            <button class="fail-btn" id="btn-fail-${index}" ${q.completed || isBattleProcessing ? 'disabled' : ''} onclick="failQuest(${index})">
+            <button class="fail-btn" id="btn-fail-${index}" ${isDone || isBattleProcessing ? 'disabled' : ''} onclick="failQuest(${index})">
               실패
             </button>
             <button class="remove-btn" ${isBattleProcessing ? 'disabled' : ''} title="단순 삭제" onclick="removeQuestWithoutPenalty(${index})">✕</button>
@@ -1102,7 +1111,7 @@
     function clearQuestWithBattle(index) {
       if (isBattleProcessing) return;
       const q = quests[index];
-      if (q.completed) return;
+      if (q.completed || q.failed) return;
 
       isBattleProcessing = true;
       toggleAllButtons(true);
@@ -1139,10 +1148,11 @@
       updateProfile();
     }
 
+    // 버그 수정: 일일 퀘스트 실패 시 failed = true 기록하여 버튼 재활성화 방지
     function failQuest(index) {
       if (isBattleProcessing) return;
       const q = quests[index];
-      if (q.completed) return;
+      if (q.completed || q.failed) return;
 
       isBattleProcessing = true;
       toggleAllButtons(true);
@@ -1154,9 +1164,12 @@
 
         if (q.type === 'once') {
           quests.splice(index, 1);
+        } else {
+          q.failed = true; // 실패 상태로 고정
         }
         loseExp(penaltyExp);
         
+        saveData();
         isBattleProcessing = false;
         renderQuests();
       });
@@ -1232,7 +1245,8 @@
         type: selectedType,
         exp: selectedDiff,
         targetDate: selectedType === 'once' ? dateVal : null,
-        completed: false
+        completed: false,
+        failed: false
       });
 
       saveData();
@@ -1250,7 +1264,7 @@
       const hours = now.getHours();
       const minutes = now.getMinutes();
 
-      const uncompletedQuests = quests.filter(q => !q.completed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
+      const uncompletedQuests = quests.filter(q => !q.completed && !q.failed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
 
       if (hours === 23 && minutes >= 0 && minutes < 50 && lastNotified11PMDate !== todayKST) {
         if (uncompletedQuests.length > 0) {
@@ -1266,10 +1280,14 @@
 
         quests = quests.filter(q => {
           const isTodayQuest = q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST);
-          if (isTodayQuest && !q.completed) {
+          if (isTodayQuest && !q.completed && !q.failed) {
             failedCount++;
             totalPenalty += q.exp;
-            return q.type === 'daily'; 
+            if (q.type === 'daily') {
+              q.failed = true;
+              return true;
+            }
+            return false;
           }
           return true;
         });

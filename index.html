@@ -80,7 +80,12 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: background 0.2s;
     }
+    .today-date-text:active { background: #3a3f51; }
 
     .notification-btn {
       background: #3a3f51;
@@ -243,7 +248,6 @@
     .opt-btn { flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s; }
     .opt-btn.active-type { background: #5c6bc0; color: white; border-color: #3f51b5; }
 
-    /* 게이지 슬라이더 스타일 */
     .diff-gauge-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
     .diff-slider {
       flex: 1; -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; background: #d7ccc8; outline: none; border: 1px solid #8d6e63;
@@ -255,7 +259,7 @@
       font-family: 'Press Start 2P', cursive; font-size: 11px; color: #d35400; background: #fff8e1; padding: 4px 8px; border-radius: 6px; border: 1px solid #a1887f; min-width: 75px; text-align: center;
     }
 
-    .level-up-modal, .avatar-select-modal {
+    .level-up-modal, .stats-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
       justify-content: center; align-items: center; z-index: 100; padding: 20px;
     }
@@ -263,9 +267,13 @@
       background: var(--card-bg); border: 2px solid var(--accent-color); padding: 20px; border-radius: 20px; text-align: center; animation: pop 0.3s ease-out; width: 100%; max-width: 320px;
     }
     @keyframes pop { from { transform: scale(0.5); } to { transform: scale(1); } }
-    .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 12px; font-size: 16px; }
+    .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 12px; font-size: 15px; }
     .modal-box p { font-size: 12px; line-height: 1.5; color: #fff; }
     .modal-box button { margin-top: 14px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
+
+    .chart-canvas-box {
+      width: 100%; height: 120px; margin-top: 12px; background: #21242d; border-radius: 10px; border: 1px solid var(--border-color); padding: 8px;
+    }
 
     .random-box-container {
       font-size: 50px; margin: 15px 0; cursor: pointer; animation: bounce 0.6s infinite alternate; user-select: none;
@@ -273,7 +281,7 @@
     @keyframes bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.1); } }
     .bonus-result-text { font-size: 14px; font-weight: 700; color: #2ecc71; margin-top: 10px; }
 
-    .reset-game-btn { background: #c62828 !important; color: white !important; margin-top: 8px !important; font-size: 11px !important; opacity: 0.9; }
+    .reset-game-btn { background: #c62828 !important; color: white !important; margin-top: 12px !important; font-size: 11px !important; opacity: 0.9; }
     .reset-game-btn:active { transform: scale(0.95); opacity: 1; }
   </style>
 </head>
@@ -281,7 +289,7 @@
 
   <div class="game-container">
     <div class="top-header-bar">
-      <div class="today-date-text" id="todayDateView">📅 날짜 로딩 중...</div>
+      <div class="today-date-text" id="todayDateView" onclick="openStatsModal()">📅 날짜 로딩 중...</div>
       <button class="notification-btn" id="notifToggleBtn" onclick="toggleNotificationPermission()">🔔 알림 켜기</button>
     </div>
 
@@ -346,6 +354,7 @@
     </div>
   </div>
 
+  <!-- 레벨 업 모달 -->
   <div class="level-up-modal" id="levelUpModal">
     <div class="modal-box">
       <h2>LEVEL UP!</h2>
@@ -355,6 +364,21 @@
       <div class="bonus-result-text" id="bonusResultText">상자를 터치하여 50~200 보너스 EXP를 획득하세요!</div>
 
       <button id="closeModal" style="display: none;">성장 완료!</button>
+    </div>
+  </div>
+
+  <!-- 날짜 클릭 시 나타나는 통계 & 리셋 모달 -->
+  <div class="stats-modal" id="statsModal">
+    <div class="modal-box">
+      <h2>📊 EXP SCORE</h2>
+      <p style="font-size: 11px; color: #868e96;">최근 일주일간 획득한 EXP 누적 그래프</p>
+      
+      <div class="chart-canvas-box">
+        <canvas id="scoreChartCanvas"></canvas>
+      </div>
+
+      <button onclick="closeStatsModal()">확인 완료</button>
+      <button class="reset-game-btn" onclick="resetAllGameData()">⚠️ 전체 게임 초기화</button>
     </div>
   </div>
 
@@ -369,6 +393,9 @@
     let currentExp = parseInt(localStorage.getItem('quest_exp')) || 0;
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
     let isNotificationEnabled = localStorage.getItem('quest_notif_enabled') === 'true';
+
+    // 일별 획득 EXP 기록 데이터 ({ '2026-09-09': 120, ... })
+    let dailyExpScores = JSON.parse(localStorage.getItem('quest_daily_exp_scores')) || {};
 
     let selectedType = 'daily';
     let selectedDiff = 20;
@@ -425,8 +452,8 @@
       animFrame: 0
     };
 
-    let blueFlames = []; // 내 캐릭터 파란 불꽃 투사체
-    let fireBall = null; // 몬스터 불꽃
+    let blueFlames = [];
+    let fireBall = null;
     let particles = [];
     let damageNumbers = [];
 
@@ -514,10 +541,8 @@
         }
       }
 
-      // 내 캐릭터 파란 불꽃 투사체 이동
       blueFlames.forEach((bf, idx) => {
         bf.x += bf.vx * dt;
-        // 파란 불꽃 잔상 파티클
         if (Math.random() < 0.7) {
           spawnParticles(bf.x, bf.y, '#00f0ff', 1);
         }
@@ -608,7 +633,6 @@
         drawDetailedMonster(monster.x, monster.y, monster.type, monster.animFrame);
       }
 
-      // 내 캐릭터 파란 불꽃(Blue Flame) 드로잉
       blueFlames.forEach(bf => {
         ctx.save();
         ctx.fillStyle = '#00f0ff';
@@ -742,7 +766,6 @@
       ctx.restore();
     }
 
-    // 클리어 연출: 난이도에 따라 연출 시간 및 타수 연장 + 파란 불꽃 공격
     function triggerClearCanvasBattle(expGain, callback) {
       isScrolling = false;
       monster.visible = true;
@@ -753,7 +776,6 @@
 
       monster.x = canvas.width - (monster.type === 'DRAGON' ? 90 : 70);
 
-      // 난이도(10~50)에 따른 발사 타수 (1 ~ 5회)
       const hitCount = Math.max(1, Math.floor(expGain / 10));
       let currentHit = 0;
 
@@ -770,7 +792,6 @@
         if (currentHit < hitCount) {
           setTimeout(shootBlueFlame, 350);
         } else {
-          // 마지막 타격 후 몬스터 소멸
           setTimeout(() => {
             monster.blinkTimer = 0.6;
             setTimeout(() => {
@@ -786,7 +807,6 @@
       setTimeout(shootBlueFlame, 400);
     }
 
-    // 실패 연출: 난이도에 따라 몬스터 불꽃 연출
     function triggerFailCanvasBattle(expLoss, callback) {
       isScrolling = false;
       monster.visible = true;
@@ -842,6 +862,91 @@
       const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
       const dateStr = now.toLocaleDateString('ko-KR', options);
       document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
+    }
+
+    // 일별 EXP 득점 저장 함수
+    function recordDailyExp(amount) {
+      const todayKST = getKSTDateString();
+      dailyExpScores[todayKST] = (dailyExpScores[todayKST] || 0) + amount;
+      localStorage.setItem('quest_daily_exp_scores', JSON.stringify(dailyExpScores));
+    }
+
+    /* 통계 모달 창 및 EXP 그래프 렌더링 */
+    function openStatsModal() {
+      renderScoreChart();
+      document.getElementById('statsModal').style.display = 'flex';
+    }
+
+    function closeStatsModal() {
+      document.getElementById('statsModal').style.display = 'none';
+    }
+
+    function renderScoreChart() {
+      const chartCanvas = document.getElementById('scoreChartCanvas');
+      const cCtx = chartCanvas.getContext('2d');
+
+      // 캔버스 크기 맞춤
+      chartCanvas.width = chartCanvas.parentElement.clientWidth - 16;
+      chartCanvas.height = chartCanvas.parentElement.clientHeight - 16;
+
+      cCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+
+      // 최근 7일 날짜 목록 구하기
+      const dates = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' });
+        dates.push(formatter.format(d));
+      }
+
+      const scores = dates.map(d => dailyExpScores[d] || 0);
+      const maxScore = Math.max(...scores, 100); // 최소 100 기준
+
+      const barWidth = Math.floor(chartCanvas.width / 7) - 8;
+      const chartHeight = chartCanvas.height - 25;
+
+      dates.forEach((dateStr, idx) => {
+        const score = scores[idx];
+        const barHeight = Math.floor((score / maxScore) * chartHeight);
+        const x = idx * (barWidth + 8) + 4;
+        const y = chartCanvas.height - 20 - barHeight;
+
+        // 막대 그래프 그리기
+        cCtx.fillStyle = score > 0 ? '#2ecc71' : '#4a4e69';
+        cCtx.fillRect(x, y, barWidth, barHeight);
+
+        // 점수 텍스트
+        if (score > 0) {
+          cCtx.font = '10px sans-serif';
+          cCtx.fillStyle = '#f39c12';
+          cCtx.textAlign = 'center';
+          cCtx.fillText(`${score}`, x + barWidth / 2, y - 4);
+        }
+
+        // 날짜 텍스트 (MM/DD)
+        const dateParts = dateStr.split('-');
+        const shortDate = `${dateParts[1]}/${dateParts[2]}`;
+        cCtx.font = '9px sans-serif';
+        cCtx.fillStyle = '#868e96';
+        cCtx.textAlign = 'center';
+        cCtx.fillText(shortDate, x + barWidth / 2, chartCanvas.height - 5);
+      });
+    }
+
+    function resetAllGameData() {
+      if (confirm("정말로 모든 레벨과 퀘스트, 득점 통계를 초기화하시겠습니까?")) {
+        localStorage.clear();
+        level = 1;
+        currentExp = 0;
+        quests = [];
+        dailyExpScores = {};
+        saveData();
+        updateProfile();
+        renderQuests();
+        closeStatsModal();
+        alert("게임 데이터가 전체 초기화되었습니다.");
+      }
     }
 
     function toggleNotificationPermission() {
@@ -973,7 +1078,7 @@
         quests.forEach(q => {
           if (q.type === 'daily') {
             if (!q.completed && !q.failed) totalPenalty += q.exp;
-            q.completed = false; // 리셋 시 다시 진행 가능하게 비활성화 해제
+            q.completed = false;
             q.failed = false;
           }
         });
@@ -1042,7 +1147,6 @@
       }
     }
 
-    // 난이도 슬라이더 변경 함수
     function onDiffSliderChange(val) {
       selectedDiff = parseInt(val);
       document.getElementById('diffValueBadge').textContent = `+${selectedDiff} EXP`;
@@ -1120,6 +1224,7 @@
         q.completed = true;
         sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
 
+        recordDailyExp(q.exp); // 일별 득점 기록
         gainExp(q.exp);
 
         if (q.type === 'once') {
@@ -1148,7 +1253,6 @@
       updateProfile();
     }
 
-    // 버그 수정: 일일 퀘스트 실패 시 failed = true 기록하여 버튼 재활성화 방지
     function failQuest(index) {
       if (isBattleProcessing) return;
       const q = quests[index];
@@ -1165,7 +1269,7 @@
         if (q.type === 'once') {
           quests.splice(index, 1);
         } else {
-          q.failed = true; // 실패 상태로 고정
+          q.failed = true;
         }
         loseExp(penaltyExp);
         
@@ -1224,6 +1328,7 @@
       document.getElementById('bonusResultText').textContent = `🎉 축하합니다! +${bonusExp} 보너스 EXP 획득!`;
       document.getElementById('closeModal').style.display = 'block';
 
+      recordDailyExp(bonusExp);
       currentExp += bonusExp;
       saveData();
       updateProfile();

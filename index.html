@@ -89,7 +89,7 @@
     .quest-card {
       background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeIn 0.3s; flex-shrink: 0; transition: opacity 0.3s;
     }
-    .quest-card.completed-card { opacity: 0.6; background: #1a1c23; }
+    .quest-card.completed-card { opacity: 0.65; background: #1a1c23; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     .quest-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; }
@@ -108,9 +108,12 @@
     .subquest-item.sub-done { text-decoration: line-through; color: #6c757d; }
 
     .quest-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
-    .clear-btn { background: var(--success-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
-    .fail-btn { background: var(--danger-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
-    .remove-btn { background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; }
+    .clear-btn { background: var(--success-color); color: white; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .fail-btn { background: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .status-text-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+    .status-success { color: #2ecc71; background: rgba(46, 204, 113, 0.15); }
+    .status-fail { color: #e74c3c; background: rgba(231, 76, 60, 0.15); }
+    .remove-btn { background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; margin-left: 2px; }
 
     .input-page-modal, .shop-modal {
       display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -205,7 +208,7 @@
         </div>
 
         <div class="form-group">
-          <label>수행 알림 시간 (선택사항)</label>
+          <label>수행 알림 시간 (미입력 시: 언제든)</label>
           <input type="time" class="quest-input-full" id="questTimeInput">
         </div>
 
@@ -218,16 +221,16 @@
         </div>
 
         <div class="form-group" id="dateGroup" style="display: none;">
-          <label>목표 날짜 지정 (선택사항)</label>
+          <label>목표 날짜 지정 (미입력 시: 오늘 날짜)</label>
           <input type="date" class="quest-input-full" id="questDateInput">
         </div>
 
         <div class="form-group">
           <label>
-            <span>난이도 게이지 (10~50)</span>
+            <span>난이도 게이지 (공격 횟수 연동)</span>
             <span id="diffLabelText" style="color: #d35400;">보통 (+20 EXP)</span>
           </label>
-          <input type="range" min="10" max="50" step="5" value="20" class="diff-slider" id="diffRangeInput" oninput="onDiffSliderChange(this.value)">
+          <input type="range" min="10" max="50" step="10" value="20" class="diff-slider" id="diffRangeInput" oninput="onDiffSliderChange(this.value)">
         </div>
       </div>
     </div>
@@ -302,7 +305,7 @@
     let isBattleProcessing = false;
 
     /* ==========================================
-       CANVAS RPG ENGINE
+       CANVAS RPG ENGINE (공격 연출 및 실패 구현)
        ========================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -316,11 +319,11 @@
     let bgScrollX = 0;
     let isScrolling = true;
 
-    const hero = { x: 40, y: 0, width: 32, height: 42, walkFrame: 0, animTimer: 0, state: 'WALK', visible: true, blinkTimer: 0, rotation: 0 };
-    const monster = { x: 9999, y: 0, width: 40, height: 40, type: 'SLIME', visible: false, blinkTimer: 0 };
-    let blueFlames = []; let particles = []; let damageNumbers = [];
+    const hero = { x: 40, y: 0, width: 32, height: 42, walkFrame: 0, animTimer: 0, visible: true, blinkTimer: 0 };
+    const monster = { x: 9999, y: 0, width: 40, height: 40, visible: false, blinkTimer: 0 };
+    let projectiles = []; let particles = []; let damageNumbers = [];
 
-    function spawnParticles(x, y, color, count = 20) {
+    function spawnParticles(x, y, color, count = 15) {
       for (let i = 0; i < count; i++) {
         particles.push({ x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, size: Math.random() * 3 + 2, color, alpha: 1, life: 0.05 });
       }
@@ -350,13 +353,14 @@
         monster.y = groundY - monster.height;
       }
 
-      blueFlames.forEach((bf, idx) => {
-        bf.x += 380 * dt;
-        if (bf.x >= monster.x) {
-          spawnParticles(bf.x, bf.y, '#00f0ff', 15);
-          monster.blinkTimer = 0.2;
-          spawnDamageNumber(monster.x, monster.y - 10, `-${bf.damage}`, '#00f0ff');
-          blueFlames.splice(idx, 1);
+      projectiles.forEach((p, idx) => {
+        p.x += p.vx * dt;
+        const targetX = p.isHeroAttacking ? monster.x : hero.x;
+        
+        if ((p.isHeroAttacking && p.x >= targetX) || (!p.isHeroAttacking && p.x <= targetX)) {
+          spawnParticles(p.x, p.y, p.color, 12);
+          spawnDamageNumber(targetX, p.y - 10, `${p.damage}`, p.color);
+          projectiles.splice(idx, 1);
         }
       });
 
@@ -373,9 +377,9 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.fillStyle = '#111e38'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = '#1f2d3d'; ctx.fillRect(0, groundY, canvas.width, 35);
       ctx.fillStyle = '#2ecc71'; ctx.fillRect(0, groundY, canvas.width, 3);
+      
       for (let i = -1; i < canvas.width / 12 + 1; i++) {
         const gx = (i * 12) - ((bgScrollX) % 12);
         ctx.fillRect(gx, groundY - 3, 3, 3);
@@ -391,7 +395,13 @@
         ctx.fillStyle = '#e74c3c'; ctx.fillRect(monster.x, monster.y + 10, 30, 25);
       }
 
-      blueFlames.forEach(bf => { ctx.fillStyle = '#00f0ff'; ctx.beginPath(); ctx.arc(bf.x, bf.y, 6, 0, Math.PI * 2); ctx.fill(); });
+      projectiles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
       particles.forEach(p => { ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); ctx.restore(); });
       damageNumbers.forEach(d => { ctx.save(); ctx.globalAlpha = d.alpha; ctx.font = '700 14px "Press Start 2P"'; ctx.fillStyle = d.color; ctx.fillText(d.text, d.x, d.y); ctx.restore(); });
     }
@@ -457,19 +467,17 @@
     }
 
     /* ==========================================
-       퀘스트 필터링 및 렌더링 (수정된 핵심 영역)
+       퀘스트 필터링 및 렌더링
        ========================================== */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
       const todayKST = getKSTDateString();
 
-      // 시간/날짜 미입력(빈칸) 시에도 표시되도록 조건 완전 보완
       const visibleQuests = quests.map((q, idx) => ({ ...q, originalIndex: idx }))
         .filter(q => {
-          if (q.type === 'daily') return true; // 일일 퀘스트는 무조건 표시
+          if (q.type === 'daily') return true;
           if (q.type === 'once') {
-            // 목표 날짜가 빈칸이거나, 목표 날짜가 오늘 날짜와 일치하는 경우 표시
             return !q.targetDate || q.targetDate === todayKST;
           }
           return true;
@@ -497,6 +505,18 @@
             `).join('') + `</div>`;
         }
 
+        let actionControlHtml = '';
+        if (q.completed) {
+          actionControlHtml = `<span class="status-text-badge status-success">✅ 성공</span>`;
+        } else if (q.failed) {
+          actionControlHtml = `<span class="status-text-badge status-fail">❌ 실패</span>`;
+        } else {
+          actionControlHtml = `
+            <button class="clear-btn" onclick="clearQuest(${idx})">성공</button>
+            <button class="fail-btn" onclick="failQuest(${idx})">실패</button>
+          `;
+        }
+
         card.innerHTML = `
           <div class="quest-main-row">
             <div class="quest-info">
@@ -505,14 +525,13 @@
                 ${q.text}
               </div>
               <div>
-                ${q.time ? `<span class="time-tag">⏰ ${q.time}</span> ` : ''}
-                ${q.targetDate ? `<span class="date-tag">📅 ${q.targetDate}</span> ` : ''}
+                <span class="time-tag">⏰ ${q.time ? q.time : '언제든'}</span> 
+                <span class="date-tag">📅 ${q.targetDate ? q.targetDate : todayKST}</span> 
                 <span class="difficulty-tag">보상: +${q.exp} EXP / +${Math.floor(q.exp/2)}G</span>
               </div>
             </div>
             <div class="quest-actions">
-              <button class="clear-btn" ${isDone?'disabled':''} onclick="clearQuest(${idx})">완료</button>
-              <button class="fail-btn" ${isDone?'disabled':''} onclick="failQuest(${idx})">실패</button>
+              ${actionControlHtml}
               <button class="remove-btn" onclick="removeQuest(${idx})">✕</button>
             </div>
           </div>
@@ -528,13 +547,25 @@
       renderQuests();
     }
 
+    /* ==========================================
+       성공 / 실패 연출 (난이도별 공격 횟수 반영)
+       ========================================== */
     function clearQuest(index) {
       if (isBattleProcessing) return;
       isBattleProcessing = true;
       const q = quests[index];
 
       monster.visible = true;
-      blueFlames.push({ x: hero.x + 30, y: hero.y + 15, damage: q.exp });
+      const attackCount = Math.max(1, Math.floor(q.exp / 10)); // 난이도에 따른 연타 횟수 (10=1회 ~ 50=5회)
+      const singleDamage = Math.ceil(q.exp / attackCount);
+
+      for (let i = 0; i < attackCount; i++) {
+        setTimeout(() => {
+          projectiles.push({
+            x: hero.x + 30, y: hero.y + 15, vx: 400, damage: `-${singleDamage}`, color: '#00f0ff', isHeroAttacking: true
+          });
+        }, i * 200);
+      }
 
       setTimeout(() => {
         monster.visible = false;
@@ -562,15 +593,30 @@
         saveData();
         renderQuests();
         isBattleProcessing = false;
-      }, 600);
+      }, attackCount * 200 + 400);
     }
 
     function failQuest(index) {
+      if (isBattleProcessing) return;
+      isBattleProcessing = true;
       const q = quests[index];
-      q.failed = true;
-      currentExp = Math.max(0, currentExp - q.exp);
-      saveData();
-      renderQuests();
+
+      monster.visible = true;
+      setTimeout(() => {
+        projectiles.push({
+          x: canvas.width - 70, y: hero.y + 15, vx: -400, damage: `-${q.exp}`, color: '#e74c3c', isHeroAttacking: false
+        });
+      }, 100);
+
+      setTimeout(() => {
+        monster.visible = false;
+        q.failed = true;
+        currentExp = Math.max(0, currentExp - q.exp);
+
+        saveData();
+        renderQuests();
+        isBattleProcessing = false;
+      }, 600);
     }
 
     function removeQuest(index) {
@@ -608,7 +654,8 @@
 
     function onDiffSliderChange(val) {
       selectedDiff = parseInt(val);
-      document.getElementById('diffLabelText').textContent = `+${selectedDiff} EXP`;
+      const attacks = Math.floor(selectedDiff / 10);
+      document.getElementById('diffLabelText').textContent = `+${selectedDiff} EXP (${attacks}회 연타)`;
     }
 
     document.getElementById('submitQuestBtn').onclick = () => {
@@ -618,7 +665,13 @@
       const subText = document.getElementById('subQuestInput').value.trim();
       const subQuests = subText ? subText.split(',').map(s => ({ text: s.trim(), done: false })) : [];
       const timeVal = document.getElementById('questTimeInput').value || null;
-      const dateVal = document.getElementById('questDateInput').value || null;
+      
+      // 날짜 미입력 시 자동으로 오늘 날짜(KST)로 지정
+      const todayKST = getKSTDateString();
+      let dateVal = document.getElementById('questDateInput').value;
+      if (!dateVal && selectedType === 'once') {
+        dateVal = todayKST;
+      }
 
       quests.push({
         text,

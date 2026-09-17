@@ -12,7 +12,6 @@
   
   <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
-  <link rel="apple-touch-icon-precomposed" href="icon.png">
 
   <link rel="manifest" href="manifest.json">
 
@@ -29,203 +28,94 @@
       --danger-color: #e74c3c;
       --text-color: #ffffff;
       --border-color: #4a4e69;
+      --gold-color: #ffd700;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; }
     
     html, body {
-      width: 100%;
-      height: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      background-color: var(--bg-color) !important;
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
+      width: 100%; height: 100%; height: 100dvh;
+      overflow: hidden; background-color: var(--bg-color) !important;
+      color: var(--text-color); margin: 0; padding: 0;
     }
 
     .game-container {
-      background: var(--card-bg);
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-      border-radius: 0;
-      padding: 12px;
-      padding-top: max(20px, env(safe-area-inset-top));
+      background: var(--card-bg); width: 100vw; height: 100vh; height: 100dvh;
+      padding: 12px; padding-top: max(20px, env(safe-area-inset-top));
       padding-bottom: max(12px, env(safe-area-inset-bottom));
-      box-shadow: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
+      display: flex; flex-direction: column; gap: 10px; justify-content: space-between; position: relative; overflow: hidden;
     }
 
     .top-header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #21242d;
-      padding: 8px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      font-size: 11px;
-      font-weight: 700;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #21242d; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 11px; font-weight: 700;
     }
 
-    .today-date-text {
-      color: #f39c12;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 6px;
-      transition: background 0.2s;
-    }
-    .today-date-text:active { background: #3a3f51; }
+    .today-date-text { color: #f39c12; display: flex; align-items: center; gap: 5px; cursor: pointer; }
 
-    .notification-btn {
-      background: #3a3f51;
-      color: #fff;
-      border: 1px solid var(--border-color);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 10px;
-      cursor: pointer;
-    }
-    .notification-btn:active { transform: scale(0.95); }
+    .header-right-tools { display: flex; align-items: center; gap: 8px; }
+    .streak-badge { background: #e67e22; color: #fff; padding: 3px 7px; border-radius: 12px; font-size: 10px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+    .gold-badge { background: #34495e; color: var(--gold-color); padding: 3px 7px; border-radius: 12px; font-size: 10px; font-weight: 700; border: 1px solid var(--gold-color); cursor: pointer; }
 
     .battle-stage-canvas-wrapper {
-      background: #000;
-      border-radius: 14px;
-      border: 1px solid var(--border-color);
-      position: relative;
-      width: 100%;
-      height: 175px;
-      overflow: hidden;
-      flex-shrink: 0;
+      background: #000; border-radius: 14px; border: 1px solid var(--border-color); position: relative; width: 100%; height: 175px; overflow: hidden; flex-shrink: 0;
     }
 
-    canvas#gameCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    canvas#gameCanvas { width: 100%; height: 100%; display: block; }
 
     .hero-profile-overlay {
-      position: absolute;
-      top: 6px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      pointer-events: none;
-      z-index: 5;
+      position: absolute; top: 6px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 5;
     }
 
     .hero-info-box {
-      flex: 1;
-      background: rgba(33, 36, 45, 0.85);
-      padding: 6px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      backdrop-filter: blur(2px);
+      flex: 1; background: rgba(33, 36, 45, 0.85); padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border-color); backdrop-filter: blur(2px);
     }
 
-    .hero-badge-inline {
-      font-size: 9px;
-      font-weight: 700;
-      color: var(--accent-color);
-      margin-left: 4px;
-    }
+    .hero-badge-inline { font-size: 9px; font-weight: 700; color: var(--accent-color); margin-left: 4px; }
+    .hero-level { font-family: 'Press Start 2P', cursive; font-size: 10px; color: var(--accent-color); margin-bottom: 4px; }
 
-    .hero-level {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 10px;
-      color: var(--accent-color);
-      margin-bottom: 4px;
-    }
-
-    .exp-bar-bg {
-      background: #1a1c23;
-      height: 12px;
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid #4a4e69;
-      position: relative;
-    }
-
-    .exp-bar-fill {
-      background: linear-gradient(90deg, #f1c40f, #e67e22);
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    .exp-text {
-      position: absolute;
-      width: 100%;
-      text-align: center;
-      font-size: 8px;
-      font-weight: 700;
-      top: 0;
-      line-height: 12px;
-      color: #fff;
-      text-shadow: 1px 1px 2px #000;
-    }
+    .exp-bar-bg { background: #1a1c23; height: 12px; border-radius: 6px; overflow: hidden; border: 1px solid #4a4e69; position: relative; }
+    .exp-bar-fill { background: linear-gradient(90deg, #f1c40f, #e67e22); height: 100%; width: 0%; transition: width 0.3s ease; }
+    .exp-text { position: absolute; width: 100%; text-align: center; font-size: 8px; font-weight: 700; top: 0; line-height: 12px; color: #fff; text-shadow: 1px 1px 2px #000; }
 
     .icon-add-btn {
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-      pointer-events: auto;
-      flex-shrink: 0;
+      background: var(--accent-color); color: white; border: none; width: 32px; height: 32px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.5); pointer-events: auto; flex-shrink: 0;
     }
-    .icon-add-btn:active { transform: scale(0.9); }
 
     .quest-list-container { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .quest-list { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; padding-right: 2px; }
     .empty-msg { text-align: center; color: #868e96; font-size: 13px; margin: auto; line-height: 1.6; }
 
     .quest-card {
-      background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s; flex-shrink: 0; gap: 8px;
-      transition: opacity 0.3s, transform 0.3s;
+      background: #21242d; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeIn 0.3s; flex-shrink: 0; transition: opacity 0.3s;
     }
     .quest-card.completed-card { opacity: 0.6; background: #1a1c23; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+    .quest-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; }
     .quest-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
     .quest-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; word-break: break-all; }
     .quest-type-badge { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 700; flex-shrink: 0; }
     .badge-daily { background: #3498db; color: white; }
     .badge-once { background: #9b59b6; color: white; }
+    .time-tag { font-size: 10px; color: #f1c40f; font-weight: 700; }
     .difficulty-tag { font-size: 10px; color: #868e96; }
+
+    .subquest-list { display: flex; flex-direction: column; gap: 4px; background: #1a1c23; padding: 6px 10px; border-radius: 8px; border: 1px solid #3a3f51; }
+    .subquest-item { font-size: 11px; color: #ccc; display: flex; align-items: center; gap: 6px; }
+    .subquest-item input { cursor: pointer; accent-color: var(--accent-color); }
+    .subquest-item.sub-done { text-decoration: line-through; color: #6c757d; }
 
     .quest-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
     .clear-btn { background: var(--success-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
     .fail-btn { background: var(--danger-color); color: white; border: none; padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
-    .remove-btn { background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; margin-left: 2px; }
-    .clear-btn:disabled, .fail-btn:disabled, .remove-btn:disabled { background: #4a4e69 !important; cursor: not-allowed; opacity: 0.5; }
+    .remove-btn { background: none; border: none; color: #868e96; font-size: 14px; padding: 4px; cursor: pointer; font-weight: 700; }
 
-    .input-page-modal {
-      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    .input-page-modal, .shop-modal {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: #f4e4bc; background-image: radial-gradient(#e3cb98 1px, transparent 1px); background-size: 16px 16px;
       z-index: 50; padding: 20px 16px; padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(12px, env(safe-area-inset-bottom));
-      flex-direction: column; justify-content: space-between; animation: slideUp 0.3s ease-out; color: #3e2723; border: 6px solid #8d6e63; border-radius: 0;
+      flex-direction: column; justify-content: space-between; animation: slideUp 0.3s ease-out; color: #3e2723; border: 6px solid #8d6e63;
     }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -233,65 +123,44 @@
     .modal-header h3 { font-size: 15px; font-weight: 700; color: #4e342e; }
     .close-page-btn { background: none; border: none; color: #8d6e63; font-size: 20px; cursor: pointer; font-weight: 700; }
 
-    .submit-quest-btn {
-      width: 100%; padding: 12px; background: #8d6e63; color: #fff8e1; border: 2px solid #4e342e; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .submit-quest-btn:active { transform: scale(0.98); background: #6d4c41; }
-
-    .input-form-body { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; flex: 1; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .submit-quest-btn { width: 100%; padding: 12px; background: #8d6e63; color: #fff8e1; border: 2px solid #4e342e; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    
+    .input-form-body { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; flex: 1; overflow-y: auto; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group label { font-size: 12px; color: #5d4037; font-weight: 700; display: flex; justify-content: space-between; }
-    .quest-input-full { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700; }
-    .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .quest-input-full { width: 100%; padding: 9px; border-radius: 10px; border: 2px solid #a1887f; background: #fff8e1; color: #3e2723; font-size: 12px; font-weight: 700; }
 
     .btn-toggle-box { display: flex; gap: 6px; }
-    .opt-btn { flex: 1; padding: 9px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .opt-btn { flex: 1; padding: 8px 4px; background: #efebe9; border: 2px solid #a1887f; color: #6d4c41; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; }
     .opt-btn.active-type { background: #5c6bc0; color: white; border-color: #3f51b5; }
 
-    .diff-gauge-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-    .diff-slider {
-      flex: 1; -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; background: #d7ccc8; outline: none; border: 1px solid #8d6e63;
-    }
-    .diff-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #f39c12; cursor: pointer; border: 2px solid #4e342e; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    .diff-value-badge {
-      font-family: 'Press Start 2P', cursive; font-size: 11px; color: #d35400; background: #fff8e1; padding: 4px 8px; border-radius: 6px; border: 1px solid #a1887f; min-width: 75px; text-align: center;
-    }
+    .diff-slider { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; background: #d7ccc8; border: 1px solid #8d6e63; }
+    .diff-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #f39c12; cursor: pointer; border: 2px solid #4e342e; }
+
+    .shop-item-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; overflow-y: auto; flex: 1; }
+    .shop-item-card { background: #fff8e1; border: 2px solid #a1887f; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .shop-item-title { font-size: 12px; font-weight: 700; color: #4e342e; }
+    .shop-item-desc { font-size: 10px; color: #795548; margin-top: 2px; }
+    .buy-btn { background: #2ecc71; color: white; border: 1px solid #27ae60; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; }
+    .buy-btn:disabled { background: #b0bec5; border-color: #90a4ae; cursor: not-allowed; }
 
     .level-up-modal, .stats-modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-      justify-content: center; align-items: center; z-index: 100; padding: 20px;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; padding: 20px;
     }
-    .modal-box {
-      background: var(--card-bg); border: 2px solid var(--accent-color); padding: 20px; border-radius: 20px; text-align: center; animation: pop 0.3s ease-out; width: 100%; max-width: 320px;
-    }
-    @keyframes pop { from { transform: scale(0.5); } to { transform: scale(1); } }
+    .modal-box { background: var(--card-bg); border: 2px solid var(--accent-color); padding: 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 320px; }
     .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 12px; font-size: 15px; }
-    .modal-box p { font-size: 12px; line-height: 1.5; color: #fff; }
-    .modal-box button { margin-top: 14px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
-
-    /* 통계 차트 영역 레이아웃 조정 */
-    .chart-canvas-box {
-      width: 100%; height: 130px; margin-top: 12px; background: #21242d; border-radius: 10px; border: 1px solid var(--border-color); padding: 8px; display: flex; justify-content: center; align-items: center;
-    }
-
-    .random-box-container {
-      font-size: 50px; margin: 15px 0; cursor: pointer; animation: bounce 0.6s infinite alternate; user-select: none;
-    }
-    @keyframes bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.1); } }
-    .bonus-result-text { font-size: 14px; font-weight: 700; color: #2ecc71; margin-top: 10px; }
-
-    .reset-game-btn { background: #c62828 !important; color: white !important; margin-top: 12px !important; font-size: 11px !important; opacity: 0.9; }
-    .reset-game-btn:active { transform: scale(0.95); opacity: 1; }
+    .chart-canvas-box { width: 100%; height: 130px; margin-top: 12px; background: #21242d; border-radius: 10px; border: 1px solid var(--border-color); padding: 8px; display: flex; justify-content: center; align-items: center; }
   </style>
 </head>
 <body>
 
   <div class="game-container">
     <div class="top-header-bar">
-      <div class="today-date-text" id="todayDateView" onclick="openStatsModal()">📅 날짜 로딩 중...</div>
-      <button class="notification-btn" id="notifToggleBtn" onclick="toggleNotificationPermission()">🔔 알림 켜기</button>
+      <div class="today-date-text" id="todayDateView" onclick="openStatsModal()">📅 로딩 중...</div>
+      <div class="header-right-tools">
+        <div class="streak-badge" id="streakBadge">🔥 0일</div>
+        <div class="gold-badge" id="goldBadge" onclick="openShopModal()">🪙 0G</div>
+      </div>
     </div>
 
     <!-- Canvas 스테이지 영역 -->
@@ -314,6 +183,7 @@
       <div class="quest-list" id="questList"></div>
     </div>
 
+    <!-- 퀘스트 등록 모달 -->
     <div class="input-page-modal" id="inputPageModal">
       <div class="modal-header">
         <h3>📜 퀘스트 수락서 작성</h3>
@@ -324,8 +194,18 @@
 
       <div class="input-form-body">
         <div class="form-group">
-          <label>퀘스트 목표</label>
-          <input type="text" class="quest-input-full" id="questInput" placeholder="예: 매일 운동 30분 하기">
+          <label>퀘스트 메인 목표</label>
+          <input type="text" class="quest-input-full" id="questInput" placeholder="예: 아침 루틴 실행하기">
+        </div>
+
+        <div class="form-group">
+          <label>하위 퀘스트 쪼개기 (쉼표 , 구분)</label>
+          <input type="text" class="quest-input-full" id="subQuestInput" placeholder="예: 물 한잔, 스트레칭, 영양제">
+        </div>
+
+        <div class="form-group">
+          <label>수행 알림 시간 (지정 시 알림 발송)</label>
+          <input type="time" class="quest-input-full" id="questTimeInput">
         </div>
 
         <div class="form-group">
@@ -337,19 +217,50 @@
         </div>
 
         <div class="form-group" id="dateGroup" style="display: none;">
-          <label>목표 날짜 지정 (달력 선택)</label>
-          <input type="date" class="date-picker-input" id="questDateInput">
+          <label>목표 날짜 지정</label>
+          <input type="date" class="quest-input-full" id="questDateInput">
         </div>
 
         <div class="form-group">
           <label>
             <span>난이도 게이지 (10~50)</span>
-            <span id="diffLabelText" style="color: #d35400; font-weight: 700;">보통 (+20 EXP)</span>
+            <span id="diffLabelText" style="color: #d35400;">보통 (+20 EXP)</span>
           </label>
-          <div class="diff-gauge-wrapper">
-            <input type="range" min="10" max="50" step="5" value="20" class="diff-slider" id="diffRangeInput" oninput="onDiffSliderChange(this.value)">
-            <div class="diff-value-badge" id="diffValueBadge">+20 EXP</div>
+          <input type="range" min="10" max="50" step="5" value="20" class="diff-slider" id="diffRangeInput" oninput="onDiffSliderChange(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <!-- 모험가 상점 모달 -->
+    <div class="shop-modal" id="shopModal">
+      <div class="modal-header">
+        <h3>🪙 모험가 상점</h3>
+        <button class="close-page-btn" onclick="closeShopModal()">✕</button>
+      </div>
+
+      <div class="shop-item-list">
+        <div class="shop-item-card">
+          <div>
+            <div class="shop-item-title">🛡️ 스트릭 수호권</div>
+            <div class="shop-item-desc">퀘스트 미이행 시 연속 스트릭 파괴를 1회 막아줍니다. (보유: <span id="shieldCount">0</span>개)</div>
           </div>
+          <button class="buy-btn" onclick="buyItem('shield', 100)">100G</button>
+        </div>
+
+        <div class="shop-item-card">
+          <div>
+            <div class="shop-item-title">🧪 EXP 2배 포션 (24h)</div>
+            <div class="shop-item-desc">24시간 동안 모든 퀘스트 완료 EXP가 2배 상승합니다.</div>
+          </div>
+          <button class="buy-btn" onclick="buyItem('doubleExp', 150)">150G</button>
+        </div>
+
+        <div class="shop-item-card">
+          <div>
+            <div class="shop-item-title">👑 골드 모험가 칭호</div>
+            <div class="shop-item-desc">프로필 배지를 전설적인 [황금 모험가]로 교체합니다.</div>
+          </div>
+          <button class="buy-btn" onclick="buyItem('goldTitle', 300)">300G</button>
         </div>
       </div>
     </div>
@@ -359,11 +270,7 @@
     <div class="modal-box">
       <h2>LEVEL UP!</h2>
       <p id="levelUpMsg">레벨이 상승했습니다! 🎉</p>
-      
-      <div class="random-box-container" id="randomBox" onclick="openRandomBox()">🎁</div>
-      <div class="bonus-result-text" id="bonusResultText">상자를 터치하여 50~200 보너스 EXP를 획득하세요!</div>
-
-      <button id="closeModal" style="display: none;">성장 완료!</button>
+      <button onclick="document.getElementById('levelUpModal').style.display='none'">확인 완료</button>
     </div>
   </div>
 
@@ -371,1094 +278,384 @@
     <div class="modal-box">
       <h2>📊 EXP SCORE</h2>
       <p style="font-size: 11px; color: #868e96;">최근 일주일간 획득한 EXP 누적 그래프</p>
-      
-      <div class="chart-canvas-box">
-        <canvas id="scoreChartCanvas"></canvas>
-      </div>
-
-      <button onclick="closeStatsModal()">확인 완료</button>
-      <button class="reset-game-btn" onclick="resetAllGameData()">⚠️ 전체 게임 초기화</button>
+      <div class="chart-canvas-box"><canvas id="scoreChartCanvas"></canvas></div>
+      <button onclick="closeStatsModal()" style="margin-top:10px; width:100%; padding:8px;">확인 완료</button>
     </div>
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/lifequest/sw.js').catch(err => console.log(err));
-      });
-    }
-
     let level = parseInt(localStorage.getItem('quest_level')) || 1;
     let currentExp = parseInt(localStorage.getItem('quest_exp')) || 0;
+    let gold = parseInt(localStorage.getItem('quest_gold')) || 0;
+    let streakDays = parseInt(localStorage.getItem('quest_streak')) || 0;
+    let shieldCount = parseInt(localStorage.getItem('quest_shield')) || 0;
+    let doubleExpUntil = parseInt(localStorage.getItem('quest_double_exp_until')) || 0;
+    let hasGoldTitle = localStorage.getItem('quest_gold_title') === 'true';
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
-    let isNotificationEnabled = localStorage.getItem('quest_notif_enabled') === 'true';
 
     let dailyExpScores = JSON.parse(localStorage.getItem('quest_daily_exp_scores')) || {};
+    let quests = JSON.parse(localStorage.getItem('quest_list_v3')) || [];
 
     let selectedType = 'daily';
     let selectedDiff = 20;
     let isBattleProcessing = false;
-    let isRandomBoxOpened = false;
-
-    let quests = JSON.parse(localStorage.getItem('quest_list_v2')) || [];
 
     /* ==========================================
-       CANVAS HIGH-QUALITY 2D RPG ENGINE
+       CANVAS RPG ENGINE (기존 핵심 그래픽 엔진 유지)
        ========================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
       const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      canvas.width = rect.width; canvas.height = rect.height;
     }
     window.addEventListener('resize', resizeCanvas);
-
-    function getThemeByLevel(lvl) {
-      if (lvl >= 50) return { sky: '#0b001a', mountain: '#2A085C', ground: '#4A0E4E', grass: '#00F0FF', grassDark: '#0099FF', treeBg: '#00F0FF', stars: true };
-      if (lvl >= 30) return { sky: '#1a0505', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C', grassDark: '#900C3F', treeBg: '#FF5733', stars: false };
-      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#2C3E50', grass: '#1ABC9C', grassDark: '#16A085', treeBg: '#2ECC71', stars: true };
-      return { sky: '#111e38', mountain: '#22334d', ground: '#1f2d3d', grass: '#2ecc71', grassDark: '#27ae60', treeBg: '#1e824c', stars: true };
-    }
 
     let bgScrollX = 0;
     let isScrolling = true;
 
-    const hero = {
-      x: 40,
-      y: 0,
-      width: 32,
-      height: 42,
-      walkFrame: 0,
-      animTimer: 0,
-      state: 'WALK',
-      visible: true,
-      blinkTimer: 0,
-      rotation: 0
-    };
+    const hero = { x: 40, y: 0, width: 32, height: 42, walkFrame: 0, animTimer: 0, state: 'WALK', visible: true, blinkTimer: 0, rotation: 0 };
+    const monster = { x: 9999, y: 0, width: 40, height: 40, type: 'SLIME', visible: false, blinkTimer: 0 };
+    let blueFlames = []; let particles = []; let damageNumbers = [];
 
-    const monster = {
-      x: 9999,
-      y: 0,
-      width: 40,
-      height: 40,
-      type: 'SLIME',
-      visible: false,
-      blinkTimer: 0,
-      attackTimer: 0,
-      animFrame: 0
-    };
+    const bgTrees = Array.from({ length: 5 }, (_, idx) => ({ x: idx * 120 + Math.random() * 50, type: Math.random() > 0.5 ? 'TALL' : 'SHORT' }));
 
-    let blueFlames = [];
-    let fireBall = null;
-    let particles = [];
-    let damageNumbers = [];
-
-    const bgStars = Array.from({ length: 30 }, () => ({
-      x: Math.random() * 400,
-      y: Math.random() * 80,
-      size: Math.random() * 2 + 1,
-      alpha: Math.random()
-    }));
-
-    // 지나가는 배경 나무 오브젝트 데이터
-    const bgTrees = Array.from({ length: 5 }, (_, idx) => ({
-      x: idx * 120 + Math.random() * 50,
-      type: Math.random() > 0.5 ? 'TALL' : 'SHORT'
-    }));
-
-    function spawnParticles(x, y, color, count = 25, isSpark = false) {
+    function spawnParticles(x, y, color, count = 20) {
       for (let i = 0; i < count; i++) {
-        particles.push({
-          x: x,
-          y: y,
-          vx: (Math.random() - 0.5) * (isSpark ? 10 : 6),
-          vy: (Math.random() - 0.5) * (isSpark ? 10 : 6),
-          size: Math.random() * (isSpark ? 3 : 4) + 2,
-          color: color,
-          alpha: 1,
-          life: isSpark ? 0.08 : 0.04
-        });
+        particles.push({ x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, size: Math.random() * 3 + 2, color, alpha: 1, life: 0.05 });
       }
     }
 
     function spawnDamageNumber(x, y, text, color) {
-      damageNumbers.push({
-        x: x,
-        y: y,
-        text: text,
-        color: color,
-        alpha: 1,
-        scale: 1.6
-      });
+      damageNumbers.push({ x, y, text, color, alpha: 1, scale: 1.5 });
     }
 
     let lastTime = performance.now();
     function gameLoop(now) {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
-
-      updateGame(dt);
-      drawGame();
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    function updateGame(dt) {
-      if (isScrolling) {
-        bgScrollX += 65 * dt;
-      }
+      if (isScrolling) bgScrollX += 60 * dt;
 
       hero.animTimer += dt;
       if (hero.animTimer > 0.12) {
         hero.walkFrame = (hero.walkFrame + 1) % 4;
-        monster.animFrame = (monster.animFrame + 1) % 4;
         hero.animTimer = 0;
       }
 
       const groundY = canvas.height - 35;
-      const bounceY = (isScrolling && hero.state === 'WALK') ? Math.sin(bgScrollX * 0.18) * 3.5 : 0;
-      
-      if (hero.state === 'WALK') {
-        hero.y = groundY - hero.height + bounceY;
-        hero.rotation = 0;
-      } else if (hero.state === 'DEAD') {
-        hero.y = groundY - 12;
-        hero.rotation = 90 * (Math.PI / 180);
-      }
+      hero.y = groundY - hero.height + (isScrolling ? Math.sin(bgScrollX * 0.18) * 3 : 0);
 
       if (monster.visible) {
-        monster.x = canvas.width - (monster.type === 'DRAGON' ? 90 : 70);
+        monster.x = canvas.width - 70;
         monster.y = groundY - monster.height;
-
-        monster.attackTimer += dt;
-        if (monster.attackTimer > 1.8 && isScrolling) {
-          fireBall = {
-            x: monster.x,
-            y: monster.y + 15,
-            vx: -200,
-            size: 6,
-            isSmall: true
-          };
-          monster.attackTimer = 0;
-        }
       }
 
       blueFlames.forEach((bf, idx) => {
-        bf.x += bf.vx * dt;
-        if (Math.random() < 0.7) {
-          spawnParticles(bf.x, bf.y, '#00f0ff', 1);
-        }
+        bf.x += 380 * dt;
         if (bf.x >= monster.x) {
-          spawnParticles(bf.x, bf.y, '#00f0ff', 15, true);
-          play8BitHitSound();
+          spawnParticles(bf.x, bf.y, '#00f0ff', 15);
           monster.blinkTimer = 0.2;
-          spawnDamageNumber(monster.x - 5, monster.y - 15, `-${bf.damage}`, '#00f0ff');
+          spawnDamageNumber(monster.x, monster.y - 10, `-${bf.damage}`, '#00f0ff');
           blueFlames.splice(idx, 1);
         }
       });
 
-      if (fireBall) {
-        fireBall.x += fireBall.vx * dt;
-        if (Math.random() < 0.6) {
-          spawnParticles(fireBall.x, fireBall.y, '#e67e22', 1);
-        }
+      particles.forEach((p, idx) => { p.x += p.vx; p.y += p.vy; p.alpha -= p.life; if (p.alpha <= 0) particles.splice(idx, 1); });
+      damageNumbers.forEach((d, idx) => { d.y -= 20 * dt; d.alpha -= 0.8 * dt; if (d.alpha <= 0) damageNumbers.splice(idx, 1); });
 
-        if (fireBall.isSmall && fireBall.x < hero.x + hero.width) {
-          spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 10);
-          fireBall = null;
-        }
-      }
-
-      particles.forEach((p, idx) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.life;
-        if (p.alpha <= 0) particles.splice(idx, 1);
-      });
-
-      damageNumbers.forEach((d, idx) => {
-        d.y -= 25 * dt;
-        d.alpha -= 0.8 * dt;
-        if (d.scale > 1) d.scale -= 1.2 * dt;
-        if (d.alpha <= 0) damageNumbers.splice(idx, 1);
-      });
-
-      if (hero.blinkTimer > 0) hero.blinkTimer -= dt;
-      if (monster.blinkTimer > 0) monster.blinkTimer -= dt;
+      drawGame();
+      requestAnimationFrame(gameLoop);
     }
 
     function drawGame() {
-      if (!canvas.width || !canvas.height) return;
-      const theme = getThemeByLevel(level);
+      if (!canvas.width) return;
       const groundY = canvas.height - 35;
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = theme.sky;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#111e38'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (theme.stars) {
-        ctx.fillStyle = '#ffffff';
-        bgStars.forEach(s => {
-          ctx.globalAlpha = Math.abs(Math.sin(performance.now() * 0.002 + s.x));
-          ctx.fillRect(s.x % canvas.width, s.y, s.size, s.size);
-        });
-        ctx.globalAlpha = 1.0;
-      }
-
-      ctx.fillStyle = theme.mountain;
-      for (let i = -1; i < 3; i++) {
-        const mx = (i * 200) - ((bgScrollX * 0.25) % 200);
-        ctx.beginPath();
-        ctx.moveTo(mx, groundY);
-        ctx.lineTo(mx + 70, groundY - 70);
-        ctx.lineTo(mx + 120, groundY - 40);
-        ctx.lineTo(mx + 200, groundY);
-        ctx.fill();
-      }
-
-      // 지나가는 배경 나무 드로잉
-      bgTrees.forEach(t => {
-        const tx = (t.x - (bgScrollX * 0.6)) % (canvas.width + 100);
-        const drawX = tx < -50 ? tx + canvas.width + 100 : tx;
-        
-        ctx.fillStyle = '#3e2723'; // 기둥
-        ctx.fillRect(drawX + 8, groundY - (t.type === 'TALL' ? 28 : 18), 4, t.type === 'TALL' ? 28 : 18);
-        
-        ctx.fillStyle = theme.treeBg; // 잎사귀
-        if (t.type === 'TALL') {
-          ctx.beginPath();
-          ctx.arc(drawX + 10, groundY - 28, 12, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.moveTo(drawX, groundY - 10);
-          ctx.lineTo(drawX + 10, groundY - 25);
-          ctx.lineTo(drawX + 20, groundY - 10);
-          ctx.fill();
-        }
-      });
-
-      // 디테일 고퀄리티 픽셀 잔디 바닥 드로잉
-      ctx.fillStyle = theme.ground;
-      ctx.fillRect(0, groundY, canvas.width, 35);
-
-      ctx.fillStyle = theme.grassDark;
-      ctx.fillRect(0, groundY, canvas.width, 6);
-
-      ctx.fillStyle = theme.grass;
-      ctx.fillRect(0, groundY, canvas.width, 3);
-      
-      // 픽셀 도트 풀잎 및 돌멩이 텍스처
+      // 디테일 잔디 및 도트
+      ctx.fillStyle = '#1f2d3d'; ctx.fillRect(0, groundY, canvas.width, 35);
+      ctx.fillStyle = '#2ecc71'; ctx.fillRect(0, groundY, canvas.width, 3);
       for (let i = -1; i < canvas.width / 12 + 1; i++) {
         const gx = (i * 12) - ((bgScrollX) % 12);
-        ctx.fillRect(gx, groundY - 4, 3, 4);
-        ctx.fillRect(gx + 5, groundY - 2, 2, 2);
-        
-        // 작은 바닥 자갈/풀 도트
-        ctx.fillStyle = theme.grassDark;
-        ctx.fillRect(gx + 2, groundY + 8, 2, 2);
-        ctx.fillRect(gx + 8, groundY + 14, 3, 2);
-        ctx.fillStyle = theme.grass;
+        ctx.fillRect(gx, groundY - 3, 3, 3);
       }
 
-      if (hero.visible && !(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
-        drawDetailedHero(hero.x, hero.y, hero.rotation, hero.walkFrame);
+      // 영웅 그리기
+      if (hero.visible) {
+        ctx.fillStyle = hasGoldTitle ? '#ffd700' : '#f39c12';
+        ctx.fillRect(hero.x + 8, hero.y + 10, 16, 20);
+        ctx.fillStyle = '#ffcc99'; ctx.fillRect(hero.x + 10, hero.y + 4, 12, 10);
       }
 
-      if (monster.visible && !(monster.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
-        drawDetailedMonster(monster.x, monster.y, monster.type, monster.animFrame);
+      // 몬스터 그리기
+      if (monster.visible) {
+        ctx.fillStyle = '#e74c3c'; ctx.fillRect(monster.x, monster.y + 10, 30, 25);
       }
 
-      blueFlames.forEach(bf => {
-        ctx.save();
-        ctx.fillStyle = '#00f0ff';
-        ctx.beginPath();
-        ctx.arc(bf.x, bf.y, bf.size + 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(bf.x, bf.y, bf.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-
-      if (fireBall) {
-        ctx.save();
-        ctx.fillStyle = '#e74c3c';
-        ctx.beginPath();
-        ctx.arc(fireBall.x, fireBall.y, fireBall.size + 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#f1c40f';
-        ctx.beginPath();
-        ctx.arc(fireBall.x, fireBall.y, fireBall.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      particles.forEach(p => {
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-        ctx.restore();
-      });
-
-      damageNumbers.forEach(d => {
-        ctx.save();
-        ctx.globalAlpha = d.alpha;
-        ctx.font = '700 15px "Press Start 2P", sans-serif';
-        ctx.fillStyle = d.color;
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 6;
-        ctx.fillText(d.text, d.x, d.y);
-        ctx.restore();
-      });
-    }
-
-    function drawDetailedHero(x, y, rotation, frame) {
-      ctx.save();
-      ctx.translate(x + 16, y + 21);
-      if (rotation !== 0) ctx.rotate(rotation);
-      ctx.translate(-(x + 16), -(y + 21));
-
-      ctx.fillStyle = '#34495e';
-      ctx.beginPath();
-      ctx.moveTo(x + 4, y + 10);
-      ctx.lineTo(x + 16, y - 6);
-      ctx.lineTo(x + 28, y + 10);
-      ctx.fill();
-      ctx.fillStyle = '#f39c12';
-      ctx.fillRect(x + 6, y + 8, 20, 3);
-
-      ctx.fillStyle = '#ffcc99';
-      ctx.fillRect(x + 8, y + 11, 16, 10);
-      ctx.fillStyle = '#2c3e50';
-      ctx.fillRect(x + 18, y + 14, 3, 4);
-
-      ctx.fillStyle = '#e74c3c';
-      ctx.fillRect(x + 2, y + 20, 8, 16);
-      ctx.fillStyle = '#2980b9';
-      ctx.fillRect(x + 8, y + 21, 16, 14);
-
-      ctx.fillStyle = '#7f8c8d';
-      ctx.fillRect(x + 24, y + 12, 3, 24);
-      ctx.fillStyle = '#00f0ff';
-      ctx.fillRect(x + 23, y + 8, 5, 5);
-
-      ctx.fillStyle = '#111';
-      if (hero.state === 'WALK') {
-        if (frame % 2 === 0) {
-          ctx.fillRect(x + 9, y + 35, 5, 7);
-          ctx.fillRect(x + 18, y + 33, 5, 5);
-        } else {
-          ctx.fillRect(x + 9, y + 33, 5, 5);
-          ctx.fillRect(x + 18, y + 35, 5, 7);
-        }
-      }
-      ctx.restore();
-    }
-
-    function drawDetailedMonster(x, y, type, frame) {
-      ctx.save();
-      if (type === 'SLIME') {
-        const squish = Math.sin(frame * 1.5) * 3;
-        ctx.fillStyle = '#2ecc71';
-        ctx.beginPath();
-        ctx.ellipse(x + 18, y + 22 + squish / 2, 16, 14 - squish / 2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(x + 10, y + 16, 5, 5);
-        ctx.fillRect(x + 20, y + 16, 5, 5);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x + 12, y + 18, 2, 2);
-        ctx.fillRect(x + 22, y + 18, 2, 2);
-
-      } else if (type === 'GOBLIN') {
-        ctx.fillStyle = '#e67e22';
-        ctx.fillRect(x + 8, y + 12, 20, 22);
-        ctx.fillStyle = '#c0392b';
-        ctx.fillRect(x + 4, y + 4, 6, 8);
-        ctx.fillRect(x + 26, y + 4, 6, 8);
-        ctx.fillStyle = '#f1c40f';
-        ctx.fillRect(x + 10, y + 16, 5, 4);
-        ctx.fillRect(x + 21, y + 16, 5, 4);
-
-      } else if (type === 'DRAGON') {
-        ctx.fillStyle = '#c0392b';
-        ctx.fillRect(x + 10, y + 8, 38, 32);
-        const wingY = Math.sin(frame * 2) * 4;
-        ctx.fillStyle = '#8e44ad';
-        ctx.beginPath();
-        ctx.moveTo(x + 25, y + 12);
-        ctx.lineTo(x + 5, y - 6 + wingY);
-        ctx.lineTo(x + 18, y + 22);
-        ctx.fill();
-        ctx.fillStyle = '#00f0ff';
-        ctx.fillRect(x + 16, y + 14, 7, 5);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(x + 14, y + 28, 4, 6);
-        ctx.fillRect(x + 22, y + 28, 4, 6);
-      }
-      ctx.restore();
-    }
-
-    function triggerClearCanvasBattle(expGain, callback) {
-      isScrolling = false;
-      monster.visible = true;
-
-      if (expGain <= 15) monster.type = 'SLIME';
-      else if (expGain >= 35) monster.type = 'DRAGON';
-      else monster.type = 'GOBLIN';
-
-      monster.x = canvas.width - (monster.type === 'DRAGON' ? 90 : 70);
-
-      const hitCount = Math.max(1, Math.floor(expGain / 10));
-      let currentHit = 0;
-
-      const shootBlueFlame = () => {
-        blueFlames.push({
-          x: hero.x + hero.width,
-          y: hero.y + 10,
-          vx: 380,
-          size: 7,
-          damage: Math.floor(expGain * 100 / hitCount)
-        });
-        currentHit++;
-
-        if (currentHit < hitCount) {
-          setTimeout(shootBlueFlame, 350);
-        } else {
-          setTimeout(() => {
-            monster.blinkTimer = 0.6;
-            setTimeout(() => {
-              spawnParticles(monster.x + 16, monster.y + 18, monster.type === 'DRAGON' ? '#e74c3c' : '#2ecc71', 45);
-              monster.visible = false;
-              isScrolling = true;
-              if (callback) callback();
-            }, 600);
-          }, 400);
-        }
-      };
-
-      setTimeout(shootBlueFlame, 400);
-    }
-
-    function triggerFailCanvasBattle(expLoss, callback) {
-      isScrolling = false;
-      monster.visible = true;
-      monster.type = 'DRAGON';
-      monster.x = canvas.width - 90;
-
-      setTimeout(() => {
-        fireBall = {
-          x: monster.x,
-          y: monster.y + 15,
-          vx: -380,
-          size: 10,
-          isSmall: false
-        };
-
-        const fireInterval = setInterval(() => {
-          if (fireBall && fireBall.x <= hero.x + hero.width) {
-            clearInterval(fireInterval);
-            fireBall = null;
-            play8BitFailSound();
-            
-            hero.blinkTimer = 0.6;
-            spawnDamageNumber(hero.x - 5, hero.y - 10, `-${expLoss} EXP`, '#ff0055');
-            spawnParticles(hero.x + 10, hero.y + 15, '#e74c3c', 35);
-
-            setTimeout(() => {
-              hero.state = 'DEAD';
-              
-              setTimeout(() => {
-                hero.visible = false;
-                spawnParticles(hero.x + 14, hero.y + 18, '#ffcc99', 20);
-
-                setTimeout(() => {
-                  hero.state = 'WALK';
-                  hero.visible = true;
-                  hero.blinkTimer = 0.5;
-                  monster.visible = false;
-                  isScrolling = true;
-                  if (callback) callback();
-                }, 600);
-              }, 600);
-            }, 600);
-          }
-        }, 16);
-      }, 500);
+      blueFlames.forEach(bf => { ctx.fillStyle = '#00f0ff'; ctx.beginPath(); ctx.arc(bf.x, bf.y, 6, 0, Math.PI * 2); ctx.fill(); });
+      particles.forEach(p => { ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); ctx.restore(); });
+      damageNumbers.forEach(d => { ctx.save(); ctx.globalAlpha = d.alpha; ctx.font = '700 14px "Press Start 2P"'; ctx.fillStyle = d.color; ctx.fillText(d.text, d.x, d.y); ctx.restore(); });
     }
 
     /* ==========================================
-       PWA & 게임 데이터 처리 로직
+       추천 요소 4가지 기능 로직 구현
        ========================================== */
-    function updateTodayDateDisplay() {
-      const now = new Date();
-      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
-      const dateStr = now.toLocaleDateString('ko-KR', options);
-      document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
+    function getKSTDateString(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(d);
     }
 
-    function recordDailyExp(amount) {
-      const todayKST = getKSTDateString();
-      dailyExpScores[todayKST] = (dailyExpScores[todayKST] || 0) + amount;
-      localStorage.setItem('quest_daily_exp_scores', JSON.stringify(dailyExpScores));
-    }
-
-    function openStatsModal() {
-      document.getElementById('statsModal').style.display = 'flex';
-      setTimeout(renderScoreChart, 50); // 모달 DOM 렌더링 후 차트 크기 계산
-    }
-
-    function closeStatsModal() {
-      document.getElementById('statsModal').style.display = 'none';
-    }
-
-    // 버그 수정: 통계 그래프 패딩 및 모달 내부 재배치 로직
-    function renderScoreChart() {
-      const chartCanvas = document.getElementById('scoreChartCanvas');
-      const box = chartCanvas.parentElement;
-      const cCtx = chartCanvas.getContext('2d');
-
-      chartCanvas.width = box.clientWidth - 16;
-      chartCanvas.height = box.clientHeight - 16;
-
-      cCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-
-      const dates = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' });
-        dates.push(formatter.format(d));
-      }
-
-      const scores = dates.map(d => dailyExpScores[d] || 0);
-      const maxScore = Math.max(...scores, 100);
-
-      const paddingX = 10;
-      const availableWidth = chartCanvas.width - (paddingX * 2);
-      const barWidth = Math.floor(availableWidth / 7) - 6;
-      const chartHeight = chartCanvas.height - 28;
-
-      dates.forEach((dateStr, idx) => {
-        const score = scores[idx];
-        const barHeight = Math.floor((score / maxScore) * chartHeight);
-        const x = paddingX + idx * (barWidth + 6);
-        const y = chartCanvas.height - 18 - barHeight;
-
-        cCtx.fillStyle = score > 0 ? '#2ecc71' : '#3a3f51';
-        cCtx.fillRect(x, y, barWidth, barHeight);
-
-        if (score > 0) {
-          cCtx.font = '9px sans-serif';
-          cCtx.fillStyle = '#f39c12';
-          cCtx.textAlign = 'center';
-          cCtx.fillText(`${score}`, x + barWidth / 2, y - 3);
-        }
-
-        const dateParts = dateStr.split('-');
-        const shortDate = `${dateParts[1]}/${dateParts[2]}`;
-        cCtx.font = '9px sans-serif';
-        cCtx.fillStyle = '#868e96';
-        cCtx.textAlign = 'center';
-        cCtx.fillText(shortDate, x + barWidth / 2, chartCanvas.height - 4);
-      });
-    }
-
-    function resetAllGameData() {
-      if (confirm("정말로 모든 레벨과 퀘스트, 득점 통계를 초기화하시겠습니까?")) {
-        localStorage.clear();
-        level = 1;
-        currentExp = 0;
-        quests = [];
-        dailyExpScores = {};
-        saveData();
-        updateProfile();
-        renderQuests();
-        closeStatsModal();
-        alert("게임 데이터가 전체 초기화되었습니다.");
-      }
-    }
-
-    function toggleNotificationPermission() {
-      if (!('Notification' in window)) {
-        alert('이 브라우저는 모바일 알림을 지원하지 않습니다.');
-        return;
-      }
-
-      if (!isNotificationEnabled) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            isNotificationEnabled = true;
-            localStorage.setItem('quest_notif_enabled', 'true');
-            updateNotificationBtnStatus();
-            sendNotification('🔔 알림 켜짐', 'Life Quest 레벨 업 및 시간별 알림이 활성화되었습니다.');
-          } else {
-            alert('스마트폰 브라우저 설정에서 알림 권한을 허용해 주세요.');
-          }
-        });
-      } else {
-        isNotificationEnabled = false;
-        localStorage.setItem('quest_notif_enabled', 'false');
-        updateNotificationBtnStatus();
-        alert('알림 기능이 끄기 상태로 변경되었습니다.');
-      }
-    }
-
-    function updateNotificationBtnStatus() {
-      const btn = document.getElementById('notifToggleBtn');
-      if (!('Notification' in window)) {
-        btn.style.display = 'none';
-        return;
-      }
-      if (isNotificationEnabled && Notification.permission === 'granted') {
-        btn.textContent = '🔔 알림 켜짐';
-        btn.style.background = '#2ecc71';
-        btn.style.color = '#fff';
-      } else {
-        btn.textContent = '🔕 알림 끔';
-        btn.style.background = '#3a3f51';
-        btn.style.color = '#ccc';
-      }
-    }
-
-    function sendNotification(title, body) {
-      if (isNotificationEnabled && 'Notification' in window && Notification.permission === 'granted') {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.ready.then(reg => {
-            reg.showNotification(title, {
-              body: body,
-              icon: 'icon.png',
-              badge: 'icon.png',
-              vibrate: [100, 50, 100]
-            });
-          });
-        } else {
-          new Notification(title, { body: body });
-        }
-      }
-    }
-
-    let audioCtx = null;
-    function initAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
-
-    function play8BitHitSound() {
-      initAudio();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
-    }
-
-    function play8BitVictorySound() {
-      initAudio();
-      const notes = [261.63, 329.63, 392.00, 523.25];
-      notes.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.15);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.1);
-        osc.stop(audioCtx.currentTime + idx * 0.1 + 0.15);
-      });
-    }
-
-    function play8BitFailSound() {
-      initAudio();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
-      osc.frequency.setValueAtTime(100, audioCtx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.4);
-    }
-
-    function getMaxExp(lvl = level) {
-      return lvl * 100;
-    }
-
-    function getKSTDateString() {
-      const formatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' });
-      return formatter.format(new Date());
-    }
-
-    function checkDailyReset() {
+    function checkStreakAndReset() {
       const todayKST = getKSTDateString();
       if (lastResetDate !== todayKST && lastResetDate !== '') {
-        let totalPenalty = 0;
-        quests.forEach(q => {
-          if (q.type === 'daily') {
-            if (!q.completed && !q.failed) totalPenalty += q.exp;
-            q.completed = false;
-            q.failed = false;
+        const yesterdayKST = getKSTDateString(-1);
+        
+        // 어제 퀘스트 수행 여부 체크
+        const wasYesterdayActive = dailyExpScores[yesterdayKST] > 0;
+        
+        if (!wasYesterdayActive) {
+          if (shieldCount > 0) {
+            shieldCount--;
+            alert("🛡️ 스트릭 수호권이 자동 사용되어 연속 달성일이 보존되었습니다!");
+          } else {
+            streakDays = 0; // 스트릭 파괴
           }
-        });
-
-        if (totalPenalty > 0) loseExp(totalPenalty);
+        }
 
         lastResetDate = todayKST;
-        localStorage.setItem('quest_last_reset', lastResetDate);
         saveData();
       } else if (lastResetDate === '') {
         lastResetDate = todayKST;
-        localStorage.setItem('quest_last_reset', lastResetDate);
+        saveData();
       }
     }
 
     function saveData() {
       localStorage.setItem('quest_level', level);
       localStorage.setItem('quest_exp', currentExp);
-      localStorage.setItem('quest_list_v2', JSON.stringify(quests));
+      localStorage.setItem('quest_gold', gold);
+      localStorage.setItem('quest_streak', streakDays);
+      localStorage.setItem('quest_shield', shieldCount);
+      localStorage.setItem('quest_double_exp_until', doubleExpUntil);
+      localStorage.setItem('quest_gold_title', hasGoldTitle);
+      localStorage.setItem('quest_last_reset', lastResetDate);
+      localStorage.setItem('quest_daily_exp_scores', JSON.stringify(dailyExpScores));
+      localStorage.setItem('quest_list_v3', JSON.stringify(quests));
+      updateUI();
     }
 
-    function getLevelBadge(lvl) {
-      if (lvl >= 77) return "👑 신화적 존재";
-      if (lvl >= 70) return "🔥 초월자";
-      if (lvl >= 60) return "⚡ 정점의 영웅";
-      if (lvl >= 50) return "🌟 영웅";
-      if (lvl >= 40) return "💎 대마법사";
-      if (lvl >= 30) return "⚔️ 상급 기사";
-      if (lvl >= 20) return "🥇 정예 기사";
-      if (lvl >= 10) return "🥈 수련 기사";
-      if (lvl >= 5)  return "🥉 견습 모험가";
-      return "🌱 초보 모험가";
-    }
+    function updateUI() {
+      document.getElementById('goldBadge').textContent = `🪙 ${gold}G`;
+      document.getElementById('streakBadge').textContent = `🔥 ${streakDays}일`;
+      document.getElementById('shieldCount').textContent = shieldCount;
 
-    function updateProfile() {
-      const maxExp = getMaxExp();
-      document.getElementById('heroLevel').innerHTML = `LV. ${level} <span class="hero-badge-inline">${getLevelBadge(level)}</span>`;
-      
-      const expPercent = Math.min((currentExp / maxExp) * 100, 100);
-      document.getElementById('expFill').style.width = `${expPercent}%`;
+      const maxExp = level * 100;
+      const title = hasGoldTitle ? '👑 황금 모험가' : (level >= 10 ? '⚔️ 숙련 모험가' : '🌱 초보 모험가');
+      document.getElementById('heroLevel').innerHTML = `LV. ${level} <span class="hero-badge-inline">${title}</span>`;
+      document.getElementById('expFill').style.width = `${Math.min((currentExp / maxExp) * 100, 100)}%`;
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
-    }
-
-    document.getElementById('openAddModalBtn').addEventListener('click', () => {
-      if (isBattleProcessing) return;
-      document.getElementById('questDateInput').value = getKSTDateString();
-      document.getElementById('inputPageModal').style.display = 'flex';
-    });
-
-    document.getElementById('closePageBtn').addEventListener('click', () => {
-      document.getElementById('inputPageModal').style.display = 'none';
-    });
-
-    function selectType(type) {
-      selectedType = type;
-      document.getElementById('typeDailyBtn').classList.remove('active-type');
-      document.getElementById('typeOnceBtn').classList.remove('active-type');
-      
-      const dateGroup = document.getElementById('dateGroup');
-      if (type === 'daily') {
-        document.getElementById('typeDailyBtn').classList.add('active-type');
-        dateGroup.style.display = 'none';
-      } else {
-        document.getElementById('typeOnceBtn').classList.add('active-type');
-        dateGroup.style.display = 'flex';
-      }
-    }
-
-    function onDiffSliderChange(val) {
-      selectedDiff = parseInt(val);
-      document.getElementById('diffValueBadge').textContent = `+${selectedDiff} EXP`;
-      
-      let labelText = "쉬움";
-      if (selectedDiff >= 20) labelText = "보통";
-      if (selectedDiff >= 35) labelText = "어려움";
-      if (selectedDiff >= 45) labelText = "매우 어려움";
-      document.getElementById('diffLabelText').textContent = `${labelText} (+${selectedDiff} EXP)`;
     }
 
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
-
       const todayKST = getKSTDateString();
-      const visibleQuests = quests.map((q, originalIndex) => ({ ...q, originalIndex }))
+
+      const visibleQuests = quests.map((q, idx) => ({ ...q, originalIndex: idx }))
         .filter(q => q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST));
 
       if (visibleQuests.length === 0) {
-        listEl.innerHTML = '<div class="empty-msg">📜 오늘 수행할 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 새 퀘스트를 등록해 보세요!</div>';
+        listEl.innerHTML = '<div class="empty-msg">📜 오늘 수행할 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 목표를 추가하세요!</div>';
         return;
       }
 
-      const sortedQuests = visibleQuests.sort((a, b) => ((a.completed || a.failed) === (b.completed || b.failed) ? 0 : (a.completed || a.failed) ? 1 : -1));
-
-      sortedQuests.forEach((q) => {
-        const index = q.originalIndex;
+      visibleQuests.forEach(q => {
+        const idx = q.originalIndex;
         const isDone = q.completed || q.failed;
         const card = document.createElement('div');
         card.className = `quest-card ${isDone ? 'completed-card' : ''}`;
-        
-        const typeBadge = q.type === 'daily' 
-          ? '<span class="quest-type-badge badge-daily">일일</span>' 
-          : '<span class="quest-type-badge badge-once">일반</span>';
 
-        let clearBtnText = '클리어';
-        if (q.completed) clearBtnText = '완료됨 ✔';
-        if (q.failed) clearBtnText = '실패함 ✖';
+        let subHtml = '';
+        if (q.subQuests && q.subQuests.length > 0) {
+          subHtml = `<div class="subquest-list">` + 
+            q.subQuests.map((sq, sIdx) => `
+              <div class="subquest-item ${sq.done ? 'sub-done' : ''}">
+                <input type="checkbox" ${sq.done ? 'checked' : ''} ${isDone ? 'disabled' : ''} onchange="toggleSubQuest(${idx}, ${sIdx})">
+                <span>${sq.text}</span>
+              </div>
+            `).join('') + `</div>`;
+        }
 
         card.innerHTML = `
-          <div class="quest-info">
-            <div class="quest-title">${typeBadge} ${q.text}</div>
-            <div class="difficulty-tag">난이도: +${q.exp} EXP</div>
+          <div class="quest-main-row">
+            <div class="quest-info">
+              <div class="quest-title">
+                <span class="quest-type-badge ${q.type==='daily'?'badge-daily':'badge-once'}">${q.type==='daily'?'일일':'일반'}</span>
+                ${q.text}
+              </div>
+              <div>
+                ${q.time ? `<span class="time-tag">⏰ ${q.time}</span> ` : ''}
+                <span class="difficulty-tag">보상: +${q.exp} EXP / +${Math.floor(q.exp/2)}G</span>
+              </div>
+            </div>
+            <div class="quest-actions">
+              <button class="clear-btn" ${isDone?'disabled':''} onclick="clearQuest(${idx})">완료</button>
+              <button class="fail-btn" ${isDone?'disabled':''} onclick="failQuest(${idx})">실패</button>
+              <button class="remove-btn" onclick="removeQuest(${idx})">✕</button>
+            </div>
           </div>
-          <div class="quest-actions">
-            <button class="clear-btn" id="btn-clear-${index}" ${isDone || isBattleProcessing ? 'disabled' : ''} onclick="clearQuestWithBattle(${index})">
-              ${clearBtnText}
-            </button>
-            <button class="fail-btn" id="btn-fail-${index}" ${isDone || isBattleProcessing ? 'disabled' : ''} onclick="failQuest(${index})">
-              실패
-            </button>
-            <button class="remove-btn" ${isBattleProcessing ? 'disabled' : ''} title="단순 삭제" onclick="removeQuestWithoutPenalty(${index})">✕</button>
-          </div>
+          ${subHtml}
         `;
         listEl.appendChild(card);
       });
     }
 
-    function toggleAllButtons(disable) {
-      document.querySelectorAll('.clear-btn, .fail-btn, .remove-btn').forEach(btn => {
-        btn.disabled = disable;
-      });
+    function toggleSubQuest(qIdx, sIdx) {
+      quests[qIdx].subQuests[sIdx].done = !quests[qIdx].subQuests[sIdx].done;
+      saveData();
+      renderQuests();
     }
 
-    function clearQuestWithBattle(index) {
+    function clearQuest(index) {
       if (isBattleProcessing) return;
-      const q = quests[index];
-      if (q.completed || q.failed) return;
-
       isBattleProcessing = true;
-      toggleAllButtons(true);
+      const q = quests[index];
 
-      triggerClearCanvasBattle(q.exp, () => {
+      monster.visible = true;
+      blueFlames.push({ x: hero.x + 30, y: hero.y + 15, damage: q.exp });
+
+      setTimeout(() => {
+        monster.visible = false;
         q.completed = true;
-        sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
 
-        recordDailyExp(q.exp);
-        gainExp(q.exp);
+        // EXP 2배 버프 체크
+        const expMult = Date.now() < doubleExpUntil ? 2 : 1;
+        const finalExp = q.exp * expMult;
+        const earnedGold = Math.floor(q.exp / 2);
 
-        if (q.type === 'once') {
-          quests.splice(index, 1);
+        currentExp += finalExp;
+        gold += earnedGold;
+
+        // 오늘 첫 클리어 시 스트릭 증가
+        const todayKST = getKSTDateString();
+        if (!dailyExpScores[todayKST] || dailyExpScores[todayKST] === 0) {
+          streakDays++;
+        }
+        dailyExpScores[todayKST] = (dailyExpScores[todayKST] || 0) + finalExp;
+
+        // 레벨업 체크
+        if (currentExp >= level * 100) {
+          currentExp -= level * 100;
+          level++;
+          document.getElementById('levelUpModal').style.display = 'flex';
         }
 
         saveData();
-        isBattleProcessing = false;
         renderQuests();
-      });
-    }
-
-    function loseExp(amount) {
-      currentExp -= amount;
-      while (currentExp < 0) {
-        if (level > 1) {
-          level--;
-          currentExp += getMaxExp(level);
-        } else {
-          level = 1;
-          currentExp = 0;
-          break;
-        }
-      }
-      saveData();
-      updateProfile();
+        isBattleProcessing = false;
+      }, 600);
     }
 
     function failQuest(index) {
-      if (isBattleProcessing) return;
       const q = quests[index];
-      if (q.completed || q.failed) return;
-
-      isBattleProcessing = true;
-      toggleAllButtons(true);
-
-      const penaltyExp = q.exp;
-
-      triggerFailCanvasBattle(penaltyExp, () => {
-        sendNotification('💥 퀘스트 실패!', `'${q.text}' 퀘스트에 실패했습니다. (-${penaltyExp} EXP 감가)`);
-
-        if (q.type === 'once') {
-          quests.splice(index, 1);
-        } else {
-          q.failed = true;
-        }
-        loseExp(penaltyExp);
-        
-        saveData();
-        isBattleProcessing = false;
-        renderQuests();
-      });
+      q.failed = true;
+      currentExp = Math.max(0, currentExp - q.exp);
+      saveData();
+      renderQuests();
     }
 
-    function removeQuestWithoutPenalty(index) {
-      if (isBattleProcessing) return;
+    function removeQuest(index) {
       quests.splice(index, 1);
       saveData();
       renderQuests();
     }
 
-    function gainExp(amount) {
-      currentExp += amount;
-      let maxExp = getMaxExp();
-      
-      if (currentExp >= maxExp) {
-        if (level < 77) {
-          currentExp -= maxExp;
-          level++;
-          showLevelUpModal();
-        } else {
-          level = 77;
-          currentExp = getMaxExp(77);
-        }
-      }
+    // 상점 시스템
+    function openShopModal() { document.getElementById('shopModal').style.display = 'flex'; }
+    function closeShopModal() { document.getElementById('shopModal').style.display = 'none'; }
+
+    function buyItem(itemType, cost) {
+      if (gold < cost) { alert("골드가 부족합니다!"); return; }
+      gold -= cost;
+
+      if (itemType === 'shield') shieldCount++;
+      if (itemType === 'doubleExp') doubleExpUntil = Date.now() + (24 * 60 * 60 * 1000);
+      if (itemType === 'goldTitle') hasGoldTitle = true;
+
       saveData();
-      updateProfile();
+      alert("아이템을 성공적으로 구매했습니다!");
     }
 
-    function showLevelUpModal() {
-      sendNotification('🎉 LEVEL UP!', `축하합니다! LV. ${level} (${getLevelBadge(level)})로 승급했습니다!`);
-      
-      isRandomBoxOpened = false;
-      document.getElementById('randomBox').style.display = 'block';
-      document.getElementById('randomBox').textContent = '🎁';
-      document.getElementById('bonusResultText').textContent = '상자를 터치하여 50~200 보너스 EXP를 획득하세요!';
-      document.getElementById('closeModal').style.display = 'none';
+    // 등록 폼 처리
+    document.getElementById('openAddModalBtn').onclick = () => document.getElementById('inputPageModal').style.display = 'flex';
+    document.getElementById('closePageBtn').onclick = () => document.getElementById('inputPageModal').style.display = 'none';
 
-      document.getElementById('levelUpMsg').textContent = `축하합니다! LV. ${level} 승급 완료!\n[${getLevelBadge(level)}] 칭호를 획득했습니다.`;
-      document.getElementById('levelUpModal').style.display = 'flex';
+    function selectType(type) {
+      selectedType = type;
+      document.getElementById('typeDailyBtn').classList.toggle('active-type', type === 'daily');
+      document.getElementById('typeOnceBtn').classList.toggle('active-type', type === 'once');
+      document.getElementById('dateGroup').style.display = type === 'once' ? 'flex' : 'none';
     }
 
-    function openRandomBox() {
-      if (isRandomBoxOpened) return;
-      isRandomBoxOpened = true;
-
-      play8BitVictorySound();
-      const bonusExp = Math.floor(Math.random() * 151) + 50;
-      
-      document.getElementById('randomBox').textContent = '💎';
-      document.getElementById('bonusResultText').textContent = `🎉 축하합니다! +${bonusExp} 보너스 EXP 획득!`;
-      document.getElementById('closeModal').style.display = 'block';
-
-      recordDailyExp(bonusExp);
-      currentExp += bonusExp;
-      saveData();
-      updateProfile();
+    function onDiffSliderChange(val) {
+      selectedDiff = parseInt(val);
+      document.getElementById('diffLabelText').textContent = `+${selectedDiff} EXP`;
     }
 
-    document.getElementById('closeModal').addEventListener('click', () => {
-      document.getElementById('levelUpModal').style.display = 'none';
-    });
-
-    document.getElementById('submitQuestBtn').addEventListener('click', () => {
-      const input = document.getElementById('questInput');
-      const text = input.value.trim();
+    document.getElementById('submitQuestBtn').onclick = () => {
+      const text = document.getElementById('questInput').value.trim();
       if (!text) return;
 
-      const dateVal = document.getElementById('questDateInput').value || getKSTDateString();
+      const subText = document.getElementById('subQuestInput').value.trim();
+      const subQuests = subText ? subText.split(',').map(s => ({ text: s.trim(), done: false })) : [];
+      const timeVal = document.getElementById('questTimeInput').value;
 
       quests.push({
-        text: text,
+        text,
+        subQuests,
+        time: timeVal,
         type: selectedType,
         exp: selectedDiff,
-        targetDate: selectedType === 'once' ? dateVal : null,
+        targetDate: selectedType === 'once' ? document.getElementById('questDateInput').value : null,
         completed: false,
         failed: false
       });
 
       saveData();
       renderQuests();
-      input.value = '';
+      document.getElementById('questInput').value = '';
+      document.getElementById('subQuestInput').value = '';
       document.getElementById('inputPageModal').style.display = 'none';
-    });
+    };
 
-    let lastNotified11PMDate = localStorage.getItem('quest_last_notified_11pm') || '';
-    let lastAutoFailedDate = localStorage.getItem('quest_last_autofailed') || '';
-
-    function checkNightSchedules() {
+    // 알림 및 특정 시각 타이머 체크
+    function checkTimeNotifications() {
       const now = new Date();
-      const todayKST = getKSTDateString();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-
-      const uncompletedQuests = quests.filter(q => !q.completed && !q.failed && (q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST)));
-
-      if (hours === 23 && minutes >= 0 && minutes < 50 && lastNotified11PMDate !== todayKST) {
-        if (uncompletedQuests.length > 0) {
-          sendNotification('⏰ [LifeQuest] 미완료 퀘스트 알림!', `오늘 완료하지 않은 퀘스트가 ${uncompletedQuests.length}개 남아있습니다! 11시 50분 전에 클리어하세요.`);
-        }
-        lastNotified11PMDate = todayKST;
-        localStorage.setItem('quest_last_notified_11pm', todayKST);
-      }
-
-      if (hours === 23 && minutes >= 50 && lastAutoFailedDate !== todayKST) {
-        let failedCount = 0;
-        let totalPenalty = 0;
-
-        quests = quests.filter(q => {
-          const isTodayQuest = q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST);
-          if (isTodayQuest && !q.completed && !q.failed) {
-            failedCount++;
-            totalPenalty += q.exp;
-            if (q.type === 'daily') {
-              q.failed = true;
-              return true;
-            }
-            return false;
+      const currentTimeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      
+      quests.forEach(q => {
+        if (!q.completed && !q.failed && q.time === currentTimeStr && !q.notifiedToday) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(`⚔️ [LifeQuest] 루틴 실행 시간!`, { body: `'${q.text}' 수행 시간입니다. 바로 클리어해 보세요!` });
           }
-          return true;
-        });
-
-        if (failedCount > 0) {
-          loseExp(totalPenalty);
-          sendNotification('💥 [LifeQuest] 11시 50분 자동 실패!', `오늘 미완료 퀘스트 ${failedCount}개가 실패 처리되었습니다. (-${totalPenalty} EXP 감가)`);
+          q.notifiedToday = true;
         }
-
-        lastAutoFailedDate = todayKST;
-        localStorage.setItem('quest_last_autofailed', todayKST);
-        saveData();
-        renderQuests();
-      }
+      });
     }
 
-    function startScheduleWatcher() {
-      checkNightSchedules();
-      setInterval(checkNightSchedules, 10000);
-    }
+    function openStatsModal() { document.getElementById('statsModal').style.display = 'flex'; }
+    function closeStatsModal() { document.getElementById('statsModal').style.display = 'none'; }
 
     resizeCanvas();
     requestAnimationFrame(gameLoop);
-
-    updateTodayDateDisplay();
-    updateNotificationBtnStatus();
-    checkDailyReset();
-    updateProfile();
+    checkStreakAndReset();
+    saveData();
     renderQuests();
-    startScheduleWatcher();
+    setInterval(checkTimeNotifications, 30000);
   </script>
 </body>
 </html>

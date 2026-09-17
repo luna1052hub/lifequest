@@ -99,6 +99,7 @@
     .badge-daily { background: #3498db; color: white; }
     .badge-once { background: #9b59b6; color: white; }
     .time-tag { font-size: 10px; color: #f1c40f; font-weight: 700; }
+    .date-tag { font-size: 10px; color: #2ecc71; font-weight: 700; }
     .difficulty-tag { font-size: 10px; color: #868e96; }
 
     .subquest-list { display: flex; flex-direction: column; gap: 4px; background: #1a1c23; padding: 6px 10px; border-radius: 8px; border: 1px solid #3a3f51; }
@@ -199,12 +200,12 @@
         </div>
 
         <div class="form-group">
-          <label>하위 퀘스트 쪼개기 (쉼표 , 구분)</label>
+          <label>하위 퀘스트 쪼개기 (쉼표 , 구분 / 선택사항)</label>
           <input type="text" class="quest-input-full" id="subQuestInput" placeholder="예: 물 한잔, 스트레칭, 영양제">
         </div>
 
         <div class="form-group">
-          <label>수행 알림 시간 (지정 시 알림 발송)</label>
+          <label>수행 알림 시간 (선택사항)</label>
           <input type="time" class="quest-input-full" id="questTimeInput">
         </div>
 
@@ -217,7 +218,7 @@
         </div>
 
         <div class="form-group" id="dateGroup" style="display: none;">
-          <label>목표 날짜 지정</label>
+          <label>목표 날짜 지정 (선택사항)</label>
           <input type="date" class="quest-input-full" id="questDateInput">
         </div>
 
@@ -301,7 +302,7 @@
     let isBattleProcessing = false;
 
     /* ==========================================
-       CANVAS RPG ENGINE (기존 핵심 그래픽 엔진 유지)
+       CANVAS RPG ENGINE
        ========================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -318,8 +319,6 @@
     const hero = { x: 40, y: 0, width: 32, height: 42, walkFrame: 0, animTimer: 0, state: 'WALK', visible: true, blinkTimer: 0, rotation: 0 };
     const monster = { x: 9999, y: 0, width: 40, height: 40, type: 'SLIME', visible: false, blinkTimer: 0 };
     let blueFlames = []; let particles = []; let damageNumbers = [];
-
-    const bgTrees = Array.from({ length: 5 }, (_, idx) => ({ x: idx * 120 + Math.random() * 50, type: Math.random() > 0.5 ? 'TALL' : 'SHORT' }));
 
     function spawnParticles(x, y, color, count = 20) {
       for (let i = 0; i < count; i++) {
@@ -375,7 +374,6 @@
 
       ctx.fillStyle = '#111e38'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 디테일 잔디 및 도트
       ctx.fillStyle = '#1f2d3d'; ctx.fillRect(0, groundY, canvas.width, 35);
       ctx.fillStyle = '#2ecc71'; ctx.fillRect(0, groundY, canvas.width, 3);
       for (let i = -1; i < canvas.width / 12 + 1; i++) {
@@ -383,14 +381,12 @@
         ctx.fillRect(gx, groundY - 3, 3, 3);
       }
 
-      // 영웅 그리기
       if (hero.visible) {
         ctx.fillStyle = hasGoldTitle ? '#ffd700' : '#f39c12';
         ctx.fillRect(hero.x + 8, hero.y + 10, 16, 20);
         ctx.fillStyle = '#ffcc99'; ctx.fillRect(hero.x + 10, hero.y + 4, 12, 10);
       }
 
-      // 몬스터 그리기
       if (monster.visible) {
         ctx.fillStyle = '#e74c3c'; ctx.fillRect(monster.x, monster.y + 10, 30, 25);
       }
@@ -401,7 +397,7 @@
     }
 
     /* ==========================================
-       추천 요소 4가지 기능 로직 구현
+       데이터 관리 및 날짜 처리
        ========================================== */
     function getKSTDateString(offsetDays = 0) {
       const d = new Date();
@@ -411,10 +407,10 @@
 
     function checkStreakAndReset() {
       const todayKST = getKSTDateString();
+      document.getElementById('todayDateView').textContent = `📅 ${todayKST}`;
+
       if (lastResetDate !== todayKST && lastResetDate !== '') {
         const yesterdayKST = getKSTDateString(-1);
-        
-        // 어제 퀘스트 수행 여부 체크
         const wasYesterdayActive = dailyExpScores[yesterdayKST] > 0;
         
         if (!wasYesterdayActive) {
@@ -422,7 +418,7 @@
             shieldCount--;
             alert("🛡️ 스트릭 수호권이 자동 사용되어 연속 달성일이 보존되었습니다!");
           } else {
-            streakDays = 0; // 스트릭 파괴
+            streakDays = 0;
           }
         }
 
@@ -460,13 +456,24 @@
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
     }
 
+    /* ==========================================
+       퀘스트 필터링 및 렌더링 (수정된 핵심 영역)
+       ========================================== */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
       const todayKST = getKSTDateString();
 
+      // 시간/날짜 미입력(빈칸) 시에도 표시되도록 조건 완전 보완
       const visibleQuests = quests.map((q, idx) => ({ ...q, originalIndex: idx }))
-        .filter(q => q.type === 'daily' || (q.type === 'once' && q.targetDate === todayKST));
+        .filter(q => {
+          if (q.type === 'daily') return true; // 일일 퀘스트는 무조건 표시
+          if (q.type === 'once') {
+            // 목표 날짜가 빈칸이거나, 목표 날짜가 오늘 날짜와 일치하는 경우 표시
+            return !q.targetDate || q.targetDate === todayKST;
+          }
+          return true;
+        });
 
       if (visibleQuests.length === 0) {
         listEl.innerHTML = '<div class="empty-msg">📜 오늘 수행할 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 목표를 추가하세요!</div>';
@@ -499,6 +506,7 @@
               </div>
               <div>
                 ${q.time ? `<span class="time-tag">⏰ ${q.time}</span> ` : ''}
+                ${q.targetDate ? `<span class="date-tag">📅 ${q.targetDate}</span> ` : ''}
                 <span class="difficulty-tag">보상: +${q.exp} EXP / +${Math.floor(q.exp/2)}G</span>
               </div>
             </div>
@@ -532,7 +540,6 @@
         monster.visible = false;
         q.completed = true;
 
-        // EXP 2배 버프 체크
         const expMult = Date.now() < doubleExpUntil ? 2 : 1;
         const finalExp = q.exp * expMult;
         const earnedGold = Math.floor(q.exp / 2);
@@ -540,14 +547,12 @@
         currentExp += finalExp;
         gold += earnedGold;
 
-        // 오늘 첫 클리어 시 스트릭 증가
         const todayKST = getKSTDateString();
         if (!dailyExpScores[todayKST] || dailyExpScores[todayKST] === 0) {
           streakDays++;
         }
         dailyExpScores[todayKST] = (dailyExpScores[todayKST] || 0) + finalExp;
 
-        // 레벨업 체크
         if (currentExp >= level * 100) {
           currentExp -= level * 100;
           level++;
@@ -590,7 +595,7 @@
       alert("아이템을 성공적으로 구매했습니다!");
     }
 
-    // 등록 폼 처리
+    // 모달 관리 및 폼 제어
     document.getElementById('openAddModalBtn').onclick = () => document.getElementById('inputPageModal').style.display = 'flex';
     document.getElementById('closePageBtn').onclick = () => document.getElementById('inputPageModal').style.display = 'none';
 
@@ -612,7 +617,8 @@
 
       const subText = document.getElementById('subQuestInput').value.trim();
       const subQuests = subText ? subText.split(',').map(s => ({ text: s.trim(), done: false })) : [];
-      const timeVal = document.getElementById('questTimeInput').value;
+      const timeVal = document.getElementById('questTimeInput').value || null;
+      const dateVal = document.getElementById('questDateInput').value || null;
 
       quests.push({
         text,
@@ -620,19 +626,22 @@
         time: timeVal,
         type: selectedType,
         exp: selectedDiff,
-        targetDate: selectedType === 'once' ? document.getElementById('questDateInput').value : null,
+        targetDate: selectedType === 'once' ? dateVal : null,
         completed: false,
         failed: false
       });
 
       saveData();
       renderQuests();
+
+      // 입력란 초기화
       document.getElementById('questInput').value = '';
       document.getElementById('subQuestInput').value = '';
+      document.getElementById('questTimeInput').value = '';
+      document.getElementById('questDateInput').value = '';
       document.getElementById('inputPageModal').style.display = 'none';
     };
 
-    // 알림 및 특정 시각 타이머 체크
     function checkTimeNotifications() {
       const now = new Date();
       const currentTimeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -650,6 +659,7 @@
     function openStatsModal() { document.getElementById('statsModal').style.display = 'flex'; }
     function closeStatsModal() { document.getElementById('statsModal').style.display = 'none'; }
 
+    // 초기 실행
     resizeCanvas();
     requestAnimationFrame(gameLoop);
     checkStreakAndReset();

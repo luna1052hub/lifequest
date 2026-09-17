@@ -12,7 +12,6 @@
   
   <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
-
   <link rel="manifest" href="manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,6 +43,16 @@
       padding: 12px; padding-top: max(20px, env(safe-area-inset-top));
       padding-bottom: max(12px, env(safe-area-inset-bottom));
       display: flex; flex-direction: column; gap: 10px; justify-content: space-between; position: relative; overflow: hidden;
+    }
+
+    /* 화면 진동 효과 */
+    .shake-anim { animation: shake 0.4s ease-in-out; }
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-8px, 5px); }
+      40% { transform: translate(8px, -5px); }
+      60% { transform: translate(-5px, 3px); }
+      80% { transform: translate(5px, -3px); }
     }
 
     .top-header-bar {
@@ -146,19 +155,37 @@
     .shop-item-title { font-size: 12px; font-weight: 700; color: #4e342e; }
     .shop-item-desc { font-size: 10px; color: #795548; margin-top: 2px; }
     .buy-btn { background: #2ecc71; color: white; border: 1px solid #27ae60; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; }
-    .buy-btn:disabled { background: #b0bec5; border-color: #90a4ae; cursor: not-allowed; }
-
-    .level-up-modal, .stats-modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; padding: 20px;
+    
+    /* 레벨 상승/하락 모달 & 랜덤박스 스타일 */
+    .level-up-modal, .level-down-modal, .stats-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100; padding: 20px; backdrop-filter: blur(4px);
     }
-    .modal-box { background: var(--card-bg); border: 2px solid var(--accent-color); padding: 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 320px; }
-    .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 12px; font-size: 15px; }
+    .modal-box { background: var(--card-bg); border: 2px solid var(--accent-color); padding: 24px; border-radius: 20px; text-align: center; width: 100%; max-width: 320px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    .modal-box.danger-box { border-color: var(--danger-color); }
+    .modal-box h2 { font-family: 'Press Start 2P', cursive; color: var(--accent-color); margin-bottom: 12px; font-size: 16px; }
+    .modal-box h2.danger-title { color: var(--danger-color); }
+
+    /* 랜덤 박스 애니메이션 */
+    .gacha-box-container { margin: 18px 0; cursor: pointer; }
+    .gift-box-icon { font-size: 50px; display: inline-block; transition: transform 0.2s; }
+    .gift-box-icon.box-shake { animation: boxShake 0.5s infinite; }
+    @keyframes boxShake {
+      0% { transform: rotate(0deg) scale(1); }
+      20% { transform: rotate(-12deg) scale(1.1); }
+      40% { transform: rotate(12deg) scale(1.1); }
+      60% { transform: rotate(-12deg) scale(1.1); }
+      80% { transform: rotate(12deg) scale(1.1); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+    .reward-result-text { font-size: 14px; font-weight: 700; color: #f1c40f; margin-top: 10px; min-height: 22px; }
+
+    .modal-box button { background: var(--accent-color); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; margin-top: 10px; width: 100%; }
     .chart-canvas-box { width: 100%; height: 130px; margin-top: 12px; background: #21242d; border-radius: 10px; border: 1px solid var(--border-color); padding: 8px; display: flex; justify-content: center; align-items: center; }
   </style>
 </head>
 <body>
 
-  <div class="game-container">
+  <div class="game-container" id="mainContainer">
     <div class="top-header-bar">
       <div class="today-date-text" id="todayDateView" onclick="openStatsModal()">📅 로딩 중...</div>
       <div class="header-right-tools">
@@ -270,11 +297,27 @@
     </div>
   </div>
 
+  <!-- 레벨 상승 & 랜덤박스 모달 -->
   <div class="level-up-modal" id="levelUpModal">
     <div class="modal-box">
-      <h2>LEVEL UP!</h2>
-      <p id="levelUpMsg">레벨이 상승했습니다! 🎉</p>
-      <button onclick="document.getElementById('levelUpModal').style.display='none'">확인 완료</button>
+      <h2>LEVEL UP! 🎉</h2>
+      <p style="font-size: 12px; color: #ccc;">축하합니다! 레벨이 상승했습니다.<br>보상 상자를 터치해 뽑아보세요!</p>
+
+      <div class="gacha-box-container" onclick="openGachaBox()">
+        <div class="gift-box-icon" id="giftBoxIcon">🎁</div>
+        <div class="reward-result-text" id="rewardResultText">상자를 클릭하세요!</div>
+      </div>
+
+      <button id="levelUpConfirmBtn" onclick="closeLevelUpModal()" style="display:none;">확인 완료</button>
+    </div>
+  </div>
+
+  <!-- 레벨 하락 모달 -->
+  <div class="level-down-modal" id="levelDownModal">
+    <div class="modal-box danger-box">
+      <h2 class="danger-title">LEVEL DOWN... 💀</h2>
+      <p style="font-size: 12px; color: #ff8a80; margin-top: 8px;">패배의 충격으로 레벨이 감소했습니다.<br>다시 마음을 가다듬고 퀘스트에 도전하세요!</p>
+      <button onclick="document.getElementById('levelDownModal').style.display='none'" style="background: var(--danger-color); margin-top: 16px;">다시 일어서기</button>
     </div>
   </div>
 
@@ -303,9 +346,10 @@
     let selectedType = 'daily';
     let selectedDiff = 20;
     let isBattleProcessing = false;
+    let isGachaOpened = false;
 
     /* ==========================================
-       CANVAS RPG ENGINE (공격 연출 및 실패 구현)
+       CANVAS RPG ENGINE (공격 및 레벨 연출)
        ========================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -319,13 +363,13 @@
     let bgScrollX = 0;
     let isScrolling = true;
 
-    const hero = { x: 40, y: 0, width: 32, height: 42, walkFrame: 0, animTimer: 0, visible: true, blinkTimer: 0 };
-    const monster = { x: 9999, y: 0, width: 40, height: 40, visible: false, blinkTimer: 0 };
+    const hero = { x: 40, y: 0, width: 32, height: 42, walkFrame: 0, animTimer: 0, visible: true, jumpY: 0 };
+    const monster = { x: 9999, y: 0, width: 40, height: 40, visible: false };
     let projectiles = []; let particles = []; let damageNumbers = [];
 
     function spawnParticles(x, y, color, count = 15) {
       for (let i = 0; i < count; i++) {
-        particles.push({ x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, size: Math.random() * 3 + 2, color, alpha: 1, life: 0.05 });
+        particles.push({ x, y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, size: Math.random() * 4 + 2, color, alpha: 1, life: 0.03 });
       }
     }
 
@@ -346,7 +390,7 @@
       }
 
       const groundY = canvas.height - 35;
-      hero.y = groundY - hero.height + (isScrolling ? Math.sin(bgScrollX * 0.18) * 3 : 0);
+      hero.y = groundY - hero.height + (isScrolling ? Math.sin(bgScrollX * 0.18) * 3 : 0) - hero.jumpY;
 
       if (monster.visible) {
         monster.x = canvas.width - 70;
@@ -407,7 +451,7 @@
     }
 
     /* ==========================================
-       데이터 관리 및 날짜 처리 (매일 일일퀘스트 상태 리셋)
+       데이터 관리 및 날짜 처리
        ========================================== */
     function getKSTDateString(offsetDays = 0) {
       const d = new Date();
@@ -432,14 +476,11 @@
           }
         }
 
-        // 일일 퀘스트 매일 초기화 (성공/실패 상태 해제)
         quests.forEach(q => {
           if (q.type === 'daily') {
             q.completed = false;
             q.failed = false;
-            if (q.subQuests) {
-              q.subQuests.forEach(sq => sq.done = false);
-            }
+            if (q.subQuests) q.subQuests.forEach(sq => sq.done = false);
           }
         });
 
@@ -473,36 +514,26 @@
       const maxExp = level * 100;
       const title = hasGoldTitle ? '👑 황금 모험가' : (level >= 10 ? '⚔️ 숙련 모험가' : '🌱 초보 모험가');
       document.getElementById('heroLevel').innerHTML = `LV. ${level} <span class="hero-badge-inline">${title}</span>`;
-      document.getElementById('expFill').style.width = `${Math.min((currentExp / maxExp) * 100, 100)}%`;
+      document.getElementById('expFill').style.width = `${Math.max(0, Math.min((currentExp / maxExp) * 100, 100))}%`;
       document.getElementById('expText').textContent = `${currentExp} / ${maxExp} EXP`;
     }
 
     /* ==========================================
-       퀘스트 필터링 및 정렬 렌더링
-       - 일일 퀘스트: 미완료 상단 / 완료·실패 맨 아래 정렬
-       - 일회성 퀘스트: 완료/실패 시 자동 삭제
+       퀘스트 필터링 및 렌더링
        ========================================== */
     function renderQuests() {
       const listEl = document.getElementById('questList');
       listEl.innerHTML = '';
       const todayKST = getKSTDateString();
 
-      // 필터링
       let visibleQuests = quests.map((q, idx) => ({ ...q, originalIndex: idx }))
         .filter(q => {
           if (q.type === 'daily') return true;
-          if (q.type === 'once') {
-            return !q.targetDate || q.targetDate === todayKST;
-          }
+          if (q.type === 'once') return !q.targetDate || q.targetDate === todayKST;
           return true;
         });
 
-      // 미완료 퀘스트 우선, 완료/실패 퀘스트 하단으로 정렬
-      visibleQuests.sort((a, b) => {
-        const aDone = a.completed || a.failed;
-        const bDone = b.completed || b.failed;
-        return aDone - bDone;
-      });
+      visibleQuests.sort((a, b) => (a.completed || a.failed) - (b.completed || b.failed));
 
       if (visibleQuests.length === 0) {
         listEl.innerHTML = '<div class="empty-msg">📜 오늘 수행할 퀘스트가 없습니다.<br>상단 + 버튼을 눌러 목표를 추가하세요!</div>';
@@ -526,17 +557,9 @@
             `).join('') + `</div>`;
         }
 
-        let actionControlHtml = '';
-        if (q.completed) {
-          actionControlHtml = `<span class="status-text-badge status-success">✅ 성공</span>`;
-        } else if (q.failed) {
-          actionControlHtml = `<span class="status-text-badge status-fail">❌ 실패</span>`;
-        } else {
-          actionControlHtml = `
-            <button class="clear-btn" onclick="clearQuest(${idx})">성공</button>
-            <button class="fail-btn" onclick="failQuest(${idx})">실패</button>
-          `;
-        }
+        let actionControlHtml = q.completed ? `<span class="status-text-badge status-success">✅ 성공</span>`
+          : (q.failed ? `<span class="status-text-badge status-fail">❌ 실패</span>`
+          : `<button class="clear-btn" onclick="clearQuest(${idx})">성공</button><button class="fail-btn" onclick="failQuest(${idx})">실패</button>`);
 
         card.innerHTML = `
           <div class="quest-main-row">
@@ -569,10 +592,79 @@
     }
 
     /* ==========================================
-       성공 / 실패 연출
-       - 일회성 퀘스트: 처리 후 리스트에서 완전히 제거
-       - 일일 퀘스트: 완료/실패 후 하단 정렬 유지
+       성공 / 실패 연출 & 레벨 상승/하락 애니메이션
        ========================================== */
+    function triggerScreenShake() {
+      const container = document.getElementById('mainContainer');
+      container.classList.remove('shake-anim');
+      void container.offsetWidth;
+      container.classList.add('shake-anim');
+    }
+
+    function triggerLevelUpEffects() {
+      triggerScreenShake();
+      spawnParticles(hero.x + 16, hero.y + 10, '#ffd700', 30);
+      spawnParticles(hero.x + 16, hero.y + 10, '#f39c12', 20);
+
+      let jumpCount = 0;
+      const jumpInterval = setInterval(() => {
+        hero.jumpY = (jumpCount % 2 === 0) ? 15 : 0;
+        jumpCount++;
+        if (jumpCount > 5) {
+          clearInterval(jumpInterval);
+          hero.jumpY = 0;
+        }
+      }, 100);
+
+      // 모달 초기화 후 표시
+      isGachaOpened = false;
+      document.getElementById('giftBoxIcon').textContent = '🎁';
+      document.getElementById('giftBoxIcon').classList.remove('box-shake');
+      document.getElementById('rewardResultText').textContent = '상자를 클릭하세요!';
+      document.getElementById('levelUpConfirmBtn').style.display = 'none';
+      document.getElementById('levelUpModal').style.display = 'flex';
+    }
+
+    function openGachaBox() {
+      if (isGachaOpened) return;
+      
+      const box = document.getElementById('giftBoxIcon');
+      box.classList.add('box-shake');
+      
+      setTimeout(() => {
+        box.classList.remove('box-shake');
+        box.textContent = '📦';
+        isGachaOpened = true;
+
+        const rand = Math.random();
+        if (rand < 0.6) {
+          const rewardGold = Math.floor(Math.random() * 6 + 1) * 50; // 50G ~ 300G
+          gold += rewardGold;
+          document.getElementById('rewardResultText').textContent = `🎉 +${rewardGold} 골드 획득!`;
+        } else if (rand < 0.9) {
+          shieldCount++;
+          document.getElementById('rewardResultText').textContent = `🛡️ 스트릭 수호권 획득!`;
+        } else {
+          doubleExpUntil = Date.now() + (24 * 60 * 60 * 1000);
+          document.getElementById('rewardResultText').textContent = `🧪 24시간 EXP 2배 포션 획득!`;
+        }
+        
+        saveData();
+        document.getElementById('levelUpConfirmBtn').style.display = 'block';
+      }, 800);
+    }
+
+    function closeLevelUpModal() {
+      document.getElementById('levelUpModal').style.display = 'none';
+    }
+
+    function triggerLevelDownEffects() {
+      triggerScreenShake();
+      spawnParticles(hero.x + 16, hero.y + 10, '#e74c3c', 25);
+      spawnParticles(hero.x + 16, hero.y + 10, '#8e44ad', 15);
+      document.getElementById('levelDownModal').style.display = 'flex';
+    }
+
     function clearQuest(index) {
       if (isBattleProcessing) return;
       isBattleProcessing = true;
@@ -584,9 +676,7 @@
 
       for (let i = 0; i < attackCount; i++) {
         setTimeout(() => {
-          projectiles.push({
-            x: hero.x + 30, y: hero.y + 15, vx: 400, damage: `-${singleDamage}`, color: '#00f0ff', isHeroAttacking: true
-          });
+          projectiles.push({ x: hero.x + 30, y: hero.y + 15, vx: 400, damage: `-${singleDamage}`, color: '#00f0ff', isHeroAttacking: true });
         }, i * 200);
       }
 
@@ -601,27 +691,25 @@
         gold += earnedGold;
 
         const todayKST = getKSTDateString();
-        if (!dailyExpScores[todayKST] || dailyExpScores[todayKST] === 0) {
-          streakDays++;
-        }
+        if (!dailyExpScores[todayKST] || dailyExpScores[todayKST] === 0) streakDays++;
         dailyExpScores[todayKST] = (dailyExpScores[todayKST] || 0) + finalExp;
 
-        if (currentExp >= level * 100) {
-          currentExp -= level * 100;
+        const maxExp = level * 100;
+        let isLeveledUp = false;
+        if (currentExp >= maxExp) {
+          currentExp -= maxExp;
           level++;
-          document.getElementById('levelUpModal').style.display = 'flex';
+          isLeveledUp = true;
         }
 
-        // 일회성 퀘스트인 경우 배열에서 완전히 삭제, 일일 퀘스트는 completed 상태로 하단 이동
-        if (q.type === 'once') {
-          quests.splice(index, 1);
-        } else {
-          q.completed = true;
-        }
+        if (q.type === 'once') quests.splice(index, 1);
+        else q.completed = true;
 
         saveData();
         renderQuests();
         isBattleProcessing = false;
+
+        if (isLeveledUp) triggerLevelUpEffects();
       }, attackCount * 200 + 400);
     }
 
@@ -632,25 +720,32 @@
 
       monster.visible = true;
       setTimeout(() => {
-        projectiles.push({
-          x: canvas.width - 70, y: hero.y + 15, vx: -400, damage: `-${q.exp}`, color: '#e74c3c', isHeroAttacking: false
-        });
+        projectiles.push({ x: canvas.width - 70, y: hero.y + 15, vx: -400, damage: `-${q.exp}`, color: '#e74c3c', isHeroAttacking: false });
       }, 100);
 
       setTimeout(() => {
         monster.visible = false;
-        currentExp = Math.max(0, currentExp - q.exp);
+        currentExp -= q.exp;
 
-        // 일회성 퀘스트인 경우 배열에서 완전히 삭제, 일일 퀘스트는 failed 상태로 하단 이동
-        if (q.type === 'once') {
-          quests.splice(index, 1);
-        } else {
-          q.failed = true;
+        let isLeveledDown = false;
+        if (currentExp < 0) {
+          if (level > 1) {
+            level--;
+            currentExp = (level * 100) + currentExp; // 잔여 EXP 조정
+            isLeveledDown = true;
+          } else {
+            currentExp = 0;
+          }
         }
+
+        if (q.type === 'once') quests.splice(index, 1);
+        else q.failed = true;
 
         saveData();
         renderQuests();
         isBattleProcessing = false;
+
+        if (isLeveledDown) triggerLevelDownEffects();
       }, 600);
     }
 
@@ -660,23 +755,20 @@
       renderQuests();
     }
 
-    // 상점 시스템
+    // 상점 및 모달
     function openShopModal() { document.getElementById('shopModal').style.display = 'flex'; }
     function closeShopModal() { document.getElementById('shopModal').style.display = 'none'; }
 
     function buyItem(itemType, cost) {
       if (gold < cost) { alert("골드가 부족합니다!"); return; }
       gold -= cost;
-
       if (itemType === 'shield') shieldCount++;
       if (itemType === 'doubleExp') doubleExpUntil = Date.now() + (24 * 60 * 60 * 1000);
       if (itemType === 'goldTitle') hasGoldTitle = true;
-
       saveData();
       alert("아이템을 성공적으로 구매했습니다!");
     }
 
-    // 모달 관리 및 폼 제어
     document.getElementById('openAddModalBtn').onclick = () => document.getElementById('inputPageModal').style.display = 'flex';
     document.getElementById('closePageBtn').onclick = () => document.getElementById('inputPageModal').style.display = 'none';
 
@@ -703,25 +795,15 @@
       
       const todayKST = getKSTDateString();
       let dateVal = document.getElementById('questDateInput').value;
-      if (!dateVal && selectedType === 'once') {
-        dateVal = todayKST;
-      }
+      if (!dateVal && selectedType === 'once') dateVal = todayKST;
 
       quests.push({
-        text,
-        subQuests,
-        time: timeVal,
-        type: selectedType,
-        exp: selectedDiff,
-        targetDate: selectedType === 'once' ? dateVal : null,
-        completed: false,
-        failed: false
+        text, subQuests, time: timeVal, type: selectedType, exp: selectedDiff, targetDate: selectedType === 'once' ? dateVal : null, completed: false, failed: false
       });
 
       saveData();
       renderQuests();
 
-      // 입력란 초기화
       document.getElementById('questInput').value = '';
       document.getElementById('subQuestInput').value = '';
       document.getElementById('questTimeInput').value = '';
@@ -729,30 +811,14 @@
       document.getElementById('inputPageModal').style.display = 'none';
     };
 
-    function checkTimeNotifications() {
-      const now = new Date();
-      const currentTimeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-      
-      quests.forEach(q => {
-        if (!q.completed && !q.failed && q.time === currentTimeStr && !q.notifiedToday) {
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`⚔️ [LifeQuest] 루틴 실행 시간!`, { body: `'${q.text}' 수행 시간입니다. 바로 클리어해 보세요!` });
-          }
-          q.notifiedToday = true;
-        }
-      });
-    }
-
     function openStatsModal() { document.getElementById('statsModal').style.display = 'flex'; }
     function closeStatsModal() { document.getElementById('statsModal').style.display = 'none'; }
 
-    // 초기 실행
     resizeCanvas();
     requestAnimationFrame(gameLoop);
     checkStreakAndReset();
     saveData();
     renderQuests();
-    setInterval(checkTimeNotifications, 30000);
   </script>
 </body>
 </html>

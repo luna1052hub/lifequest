@@ -271,8 +271,9 @@
     .modal-box p { font-size: 12px; line-height: 1.5; color: #fff; }
     .modal-box button { margin-top: 14px; width: 100%; padding: 10px; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; }
 
+    /* 통계 차트 영역 레이아웃 조정 */
     .chart-canvas-box {
-      width: 100%; height: 120px; margin-top: 12px; background: #21242d; border-radius: 10px; border: 1px solid var(--border-color); padding: 8px;
+      width: 100%; height: 130px; margin-top: 12px; background: #21242d; border-radius: 10px; border: 1px solid var(--border-color); padding: 8px; display: flex; justify-content: center; align-items: center;
     }
 
     .random-box-container {
@@ -354,7 +355,6 @@
     </div>
   </div>
 
-  <!-- 레벨 업 모달 -->
   <div class="level-up-modal" id="levelUpModal">
     <div class="modal-box">
       <h2>LEVEL UP!</h2>
@@ -367,7 +367,6 @@
     </div>
   </div>
 
-  <!-- 날짜 클릭 시 나타나는 통계 & 리셋 모달 -->
   <div class="stats-modal" id="statsModal">
     <div class="modal-box">
       <h2>📊 EXP SCORE</h2>
@@ -394,7 +393,6 @@
     let lastResetDate = localStorage.getItem('quest_last_reset') || '';
     let isNotificationEnabled = localStorage.getItem('quest_notif_enabled') === 'true';
 
-    // 일별 획득 EXP 기록 데이터 ({ '2026-09-09': 120, ... })
     let dailyExpScores = JSON.parse(localStorage.getItem('quest_daily_exp_scores')) || {};
 
     let selectedType = 'daily';
@@ -418,10 +416,10 @@
     window.addEventListener('resize', resizeCanvas);
 
     function getThemeByLevel(lvl) {
-      if (lvl >= 50) return { sky: '#0b001a', mountain: '#2A085C', ground: '#4A0E4E', grass: '#00F0FF', stars: true };
-      if (lvl >= 30) return { sky: '#1a0505', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C', stars: false };
-      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#2C3E50', grass: '#1ABC9C', stars: true };
-      return { sky: '#111e38', mountain: '#22334d', ground: '#1f2d3d', grass: '#2ecc71', stars: true };
+      if (lvl >= 50) return { sky: '#0b001a', mountain: '#2A085C', ground: '#4A0E4E', grass: '#00F0FF', grassDark: '#0099FF', treeBg: '#00F0FF', stars: true };
+      if (lvl >= 30) return { sky: '#1a0505', mountain: '#4A0E17', ground: '#2E0000', grass: '#E74C3C', grassDark: '#900C3F', treeBg: '#FF5733', stars: false };
+      if (lvl >= 15) return { sky: '#0B132B', mountain: '#1C2541', ground: '#2C3E50', grass: '#1ABC9C', grassDark: '#16A085', treeBg: '#2ECC71', stars: true };
+      return { sky: '#111e38', mountain: '#22334d', ground: '#1f2d3d', grass: '#2ecc71', grassDark: '#27ae60', treeBg: '#1e824c', stars: true };
     }
 
     let bgScrollX = 0;
@@ -462,6 +460,12 @@
       y: Math.random() * 80,
       size: Math.random() * 2 + 1,
       alpha: Math.random()
+    }));
+
+    // 지나가는 배경 나무 오브젝트 데이터
+    const bgTrees = Array.from({ length: 5 }, (_, idx) => ({
+      x: idx * 120 + Math.random() * 50,
+      type: Math.random() > 0.5 ? 'TALL' : 'SHORT'
     }));
 
     function spawnParticles(x, y, color, count = 25, isSpark = false) {
@@ -615,14 +619,49 @@
         ctx.fill();
       }
 
+      // 지나가는 배경 나무 드로잉
+      bgTrees.forEach(t => {
+        const tx = (t.x - (bgScrollX * 0.6)) % (canvas.width + 100);
+        const drawX = tx < -50 ? tx + canvas.width + 100 : tx;
+        
+        ctx.fillStyle = '#3e2723'; // 기둥
+        ctx.fillRect(drawX + 8, groundY - (t.type === 'TALL' ? 28 : 18), 4, t.type === 'TALL' ? 28 : 18);
+        
+        ctx.fillStyle = theme.treeBg; // 잎사귀
+        if (t.type === 'TALL') {
+          ctx.beginPath();
+          ctx.arc(drawX + 10, groundY - 28, 12, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(drawX, groundY - 10);
+          ctx.lineTo(drawX + 10, groundY - 25);
+          ctx.lineTo(drawX + 20, groundY - 10);
+          ctx.fill();
+        }
+      });
+
+      // 디테일 고퀄리티 픽셀 잔디 바닥 드로잉
       ctx.fillStyle = theme.ground;
       ctx.fillRect(0, groundY, canvas.width, 35);
 
+      ctx.fillStyle = theme.grassDark;
+      ctx.fillRect(0, groundY, canvas.width, 6);
+
       ctx.fillStyle = theme.grass;
-      ctx.fillRect(0, groundY, canvas.width, 4);
-      for (let i = -1; i < canvas.width / 16 + 1; i++) {
-        const gx = (i * 16) - ((bgScrollX) % 16);
-        ctx.fillRect(gx, groundY - 3, 8, 3);
+      ctx.fillRect(0, groundY, canvas.width, 3);
+      
+      // 픽셀 도트 풀잎 및 돌멩이 텍스처
+      for (let i = -1; i < canvas.width / 12 + 1; i++) {
+        const gx = (i * 12) - ((bgScrollX) % 12);
+        ctx.fillRect(gx, groundY - 4, 3, 4);
+        ctx.fillRect(gx + 5, groundY - 2, 2, 2);
+        
+        // 작은 바닥 자갈/풀 도트
+        ctx.fillStyle = theme.grassDark;
+        ctx.fillRect(gx + 2, groundY + 8, 2, 2);
+        ctx.fillRect(gx + 8, groundY + 14, 3, 2);
+        ctx.fillStyle = theme.grass;
       }
 
       if (hero.visible && !(hero.blinkTimer > 0 && Math.floor(performance.now() / 80) % 2 === 0)) {
@@ -864,34 +903,32 @@
       document.getElementById('todayDateView').textContent = `📅 ${dateStr}`;
     }
 
-    // 일별 EXP 득점 저장 함수
     function recordDailyExp(amount) {
       const todayKST = getKSTDateString();
       dailyExpScores[todayKST] = (dailyExpScores[todayKST] || 0) + amount;
       localStorage.setItem('quest_daily_exp_scores', JSON.stringify(dailyExpScores));
     }
 
-    /* 통계 모달 창 및 EXP 그래프 렌더링 */
     function openStatsModal() {
-      renderScoreChart();
       document.getElementById('statsModal').style.display = 'flex';
+      setTimeout(renderScoreChart, 50); // 모달 DOM 렌더링 후 차트 크기 계산
     }
 
     function closeStatsModal() {
       document.getElementById('statsModal').style.display = 'none';
     }
 
+    // 버그 수정: 통계 그래프 패딩 및 모달 내부 재배치 로직
     function renderScoreChart() {
       const chartCanvas = document.getElementById('scoreChartCanvas');
+      const box = chartCanvas.parentElement;
       const cCtx = chartCanvas.getContext('2d');
 
-      // 캔버스 크기 맞춤
-      chartCanvas.width = chartCanvas.parentElement.clientWidth - 16;
-      chartCanvas.height = chartCanvas.parentElement.clientHeight - 16;
+      chartCanvas.width = box.clientWidth - 16;
+      chartCanvas.height = box.clientHeight - 16;
 
       cCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
 
-      // 최근 7일 날짜 목록 구하기
       const dates = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -901,36 +938,35 @@
       }
 
       const scores = dates.map(d => dailyExpScores[d] || 0);
-      const maxScore = Math.max(...scores, 100); // 최소 100 기준
+      const maxScore = Math.max(...scores, 100);
 
-      const barWidth = Math.floor(chartCanvas.width / 7) - 8;
-      const chartHeight = chartCanvas.height - 25;
+      const paddingX = 10;
+      const availableWidth = chartCanvas.width - (paddingX * 2);
+      const barWidth = Math.floor(availableWidth / 7) - 6;
+      const chartHeight = chartCanvas.height - 28;
 
       dates.forEach((dateStr, idx) => {
         const score = scores[idx];
         const barHeight = Math.floor((score / maxScore) * chartHeight);
-        const x = idx * (barWidth + 8) + 4;
-        const y = chartCanvas.height - 20 - barHeight;
+        const x = paddingX + idx * (barWidth + 6);
+        const y = chartCanvas.height - 18 - barHeight;
 
-        // 막대 그래프 그리기
-        cCtx.fillStyle = score > 0 ? '#2ecc71' : '#4a4e69';
+        cCtx.fillStyle = score > 0 ? '#2ecc71' : '#3a3f51';
         cCtx.fillRect(x, y, barWidth, barHeight);
 
-        // 점수 텍스트
         if (score > 0) {
-          cCtx.font = '10px sans-serif';
+          cCtx.font = '9px sans-serif';
           cCtx.fillStyle = '#f39c12';
           cCtx.textAlign = 'center';
-          cCtx.fillText(`${score}`, x + barWidth / 2, y - 4);
+          cCtx.fillText(`${score}`, x + barWidth / 2, y - 3);
         }
 
-        // 날짜 텍스트 (MM/DD)
         const dateParts = dateStr.split('-');
         const shortDate = `${dateParts[1]}/${dateParts[2]}`;
         cCtx.font = '9px sans-serif';
         cCtx.fillStyle = '#868e96';
         cCtx.textAlign = 'center';
-        cCtx.fillText(shortDate, x + barWidth / 2, chartCanvas.height - 5);
+        cCtx.fillText(shortDate, x + barWidth / 2, chartCanvas.height - 4);
       });
     }
 
@@ -1224,7 +1260,7 @@
         q.completed = true;
         sendNotification('⚔️ 퀘스트 성공!', `'${q.text}' 클리어! (+${q.exp} EXP를 획득했습니다)`);
 
-        recordDailyExp(q.exp); // 일별 득점 기록
+        recordDailyExp(q.exp);
         gainExp(q.exp);
 
         if (q.type === 'once') {
